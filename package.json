@@ -1,6 +1,7 @@
 {
   "name": "mjh-pubg-royale",
   "version": "1.0.0",
+  "private": true,
   "description": "Multiplayer Battle Royale PWA Game with authoritative server",
   "main": "apps/server/index.js",
   "scripts": {
@@ -8,11 +9,11 @@
     "web:dev": "serve . -p 3000 --cors",
     "server:dev": "nodemon apps/server/index.js",
     "build": "npm run build:web && npm run build:server",
-    "build:web": "echo 'Web build ready' && mkdir -p deploy/web",
-    "build:server": "echo 'Server build ready' && mkdir -p deploy/server",
+    "build:web": "echo "Web build ready" && mkdir -p deploy/web",
+    "build:server": "echo "Server build ready" && mkdir -p deploy/server",
     "start": "node apps/server/index.js",
-    "deploy": "npm run build && echo 'Deploy to Vercel/Netlify'",
-    "test": "echo 'Add tests later' && exit 0",
+    "deploy": "npm run build && echo "Deploy to Vercel/Netlify"",
+    "test": "echo "Add tests later" && exit 0",
     "lint": "eslint . --ext .js",
     "format": "prettier --write ."
   },
