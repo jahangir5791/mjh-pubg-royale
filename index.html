@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1a2e">
     <meta name="background-color" content="#16213e">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
 
     <script>
         if ('serviceWorker' in navigator) {
@@ -115,14 +115,6 @@
             opacity: 0.9;
         }
 
-        .offline {
-            background: rgba(255,0,0,0.18);
-            padding: 10px 14px;
-            border-radius: 10px;
-            margin-top: 16px;
-            display: inline-block;
-        }
-
         @media (max-width: 480px) {
             h1 { font-size: 2.1em; }
             .subtitle { font-size: 1em; }
@@ -149,9 +141,7 @@
 
     <script>
         window.addEventListener('online', () => {
-            const status = document.getElementById('status');
-            status.textContent = 'Online - Ready to play!';
-            document.querySelector('.offline')?.remove();
+            document.getElementById('status').textContent = 'Online - Ready to play!';
         });
 
         window.addEventListener('offline', () => {
