@@ -195,6 +195,15 @@ Coming soon: Real multiplayer battle royale');
             }
         }
 
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('create') === '1') {
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    createRoom();
+                }, 300);
+            });
+        }
+
         let deferredPrompt = null;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
