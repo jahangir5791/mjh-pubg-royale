@@ -8,9 +8,12 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1a2e">
     <meta name="background-color" content="#16213e">
+    <link rel="icon" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" sizes="256x256" href="icons/icon-256.png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
 
     <script>
+        // Service worker register
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
@@ -127,9 +130,9 @@
         <h1>🎮 MJH PUBG Royale</h1>
         <p class="subtitle">Multiplayer Battle Royale PWA Game</p>
 
-        <button class="btn btn-primary" onclick="startGame()">🚀 Quick Play</button>
-        <button class="btn btn-secondary" onclick="createRoom()">🏠 Create Room</button>
-        <button class="btn btn-secondary" onclick="joinRoom()">👥 Join Room</button>
+        <button class="btn btn-primary" id="quick-play">🚀 Quick Play</button>
+        <button class="btn btn-secondary" id="create-room">🏠 Create Room</button>
+        <button class="btn btn-secondary" id="join-room">👥 Join Room</button>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
@@ -185,6 +188,14 @@ Coming soon: Real multiplayer battle royale');
             }
         }
 
+        // safer button binding
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('quick-play')  .addEventListener('click', startGame);
+            document.getElementById('create-room') .addEventListener('click', createRoom);
+            document.getElementById('join-room')   .addEventListener('click', joinRoom);
+        });
+
+        // auto-load create room on ?create=1
         const params = new URLSearchParams(window.location.search);
         if (params.get('create') === '1') {
             window.addEventListener('load', () => {
@@ -194,6 +205,7 @@ Coming soon: Real multiplayer battle royale');
             });
         }
 
+        // PWA install prompt
         let deferredPrompt = null;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
