@@ -1,1 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - MJH PUBG Royale</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 2.4em;
+            margin-bottom: 18px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status {
+            font-size: 1.2em;
+            margin-bottom: 22px;
+            opacity: 0.9;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            border: none;
+            padding: 14px 28px;
+            font-size: 1em;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            margin-top: 12px;
+            box-shadow: 0 8px 25px rgba(78,205,196,0.35);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.25);
+            border-top: 3px solid #4ecdc4;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 18px;
+        }
+
+        .features {
+            margin-top: 28px;
+            opacity: 0.85;
+            font-size: 0.95em;
+            line-height: 1.7;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ MJH PUBG Royale</h1>
+        <div class="spinner"></div>
+        <div class="status">You're offline</div>
+        <p>Connect to the internet to play multiplayer battle royale.</p>
+
+        <button class="btn" onclick="window.location.reload()">🔄 Retry Connection</button>
+
+        <div class="features">
+            <p>✅ App cached for quick load</p>
+            <p>✅ Installable PWA</p>
+            <p>✅ Ready for multiplayer</p>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+
+        if (navigator.onLine) {
+            window.location.href = './index.html';
+        }
+    </script>
+</body>
+</html>
