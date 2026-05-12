@@ -1,0 +1,14 @@
+{
+  "name": "mjh-pubg-royale-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "WebSocket multiplayer server for MJH PUBG Royale",
+  "main": "ws/index.js",
+  "scripts": {
+    "start": "node ws/index.js"
+  },
+  "dependencies": {
+    "ws": "^8.14.2",
+    "uuid": "^9.0.1"
+  }
+}
