@@ -1,14 +1,18 @@
 {
   "name": "mjh-pubg-royale",
-  "version": "0.1.0",
-  "description": "MJH PUBG Royale multiplayer battle royale PWA game",
+  "version": "1.0.0",
   "type": "module",
+  "description": "Real 3D Multiplayer Battle Royale Game",
+  "main": "apps/server/ws/index.js",
   "scripts": {
-    "dev": "node apps/server/index.js",
-    "start": "node apps/server/index.js"
+    "start": "node apps/server/ws/index.js",
+    "server": "node apps/server/ws/index.js"
   },
+  "keywords": ["battle-royale", "multiplayer", "3d-game", "websocket", "pubg"],
+  "author": "MJH",
+  "license": "MIT",
   "dependencies": {
-    "express": "^4.21.0",
-    "socket.io": "^4.7.5"
+    "ws": "^8.14.2",
+    "uuid": "^9.0.1"
   }
 }
