@@ -1,217 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MJH PUBG Royale - Multiplayer Battle Royale PWA Game</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MJH PUBG Royale - Multiplayer Battle Royale PWA Game</title>
 
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#1a1a2e">
-    <meta name="background-color" content="#16213e">
-    <link rel="icon" sizes="192x192" href="/icons/icon-192.png">
-    <link rel="icon" sizes="256x256" href="/icons/icon-256.png">
-    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="background-color" content="#16213e">
+  <link rel="icon" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" sizes="256x256" href="icons/icon-256.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registered', reg))
-                    .catch(err => console.log('SW registration failed', err));
-            });
-        }
-    </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('SW registered', reg))
+          .catch(err => console.log('SW registration failed', err));
+      });
+    }
+  </script>
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
 
-        .container {
-            width: 100%;
-            max-width: 600px;
-            padding: 20px;
-            text-align: center;
-        }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        h1 {
-            font-size: 3em;
-            margin-bottom: 16px;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.35);
-        }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      padding: 20px;
+      text-align: center;
+    }
 
-        .subtitle {
-            font-size: 1.2em;
-            margin-bottom: 28px;
-            opacity: 0.9;
-        }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 16px;
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.35);
+    }
 
-        .btn {
-            border: none;
-            padding: 14px 24px;
-            font-size: 1em;
-            border-radius: 50px;
-            cursor: pointer;
-            margin: 8px;
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
+    .subtitle {
+      font-size: 1.2em;
+      margin-bottom: 28px;
+      opacity: 0.9;
+    }
 
-        .btn:hover {
-            transform: translateY(-2px);
-        }
+    .btn {
+      border: none;
+      padding: 14px 24px;
+      font-size: 1em;
+      border-radius: 50px;
+      cursor: pointer;
+      margin: 8px;
+      color: white;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: inline-block;
+    }
 
-        .btn-primary {
-            background: linear-gradient(45deg, #ff6b6b, #feca57);
-            box-shadow: 0 8px 25px rgba(255,107,107,0.35);
-        }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
 
-        .btn-secondary {
-            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
-            box-shadow: 0 8px 25px rgba(78,205,196,0.35);
-        }
+    .btn-primary {
+      background: linear-gradient(45deg, #ff6b6b, #feca57);
+      box-shadow: 0 8px 25px rgba(255,107,107,0.35);
+    }
 
-        .loading {
-            display: none;
-            margin-top: 22px;
-        }
+    .btn-secondary {
+      background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+      box-shadow: 0 8px 25px rgba(78,205,196,0.35);
+    }
 
-        .spinner {
-            border: 4px solid rgba(255,255,255,0.25);
-            border-top: 4px solid #ff6b6b;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 12px;
-        }
+    .loading {
+      display: none;
+      margin-top: 22px;
+    }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+    .spinner {
+      border: 4px solid rgba(255,255,255,0.25);
+      border-top: 4px solid #ff6b6b;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 12px;
+    }
 
-        .status {
-            margin-top: 24px;
-            font-size: 1.05em;
-            opacity: 0.9;
-        }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
-        @media (max-width: 480px) {
-            h1 { font-size: 2.1em; }
-            .subtitle { font-size: 1em; }
-            .btn { width: 100%; max-width: 280px; }
-        }
-    </style>
+    .status {
+      margin-top: 24px;
+      font-size: 1.05em;
+      opacity: 0.9;
+      word-break: break-word;
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 2.1em; }
+      .subtitle { font-size: 1em; }
+      .btn { width: 100%; max-width: 280px; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎮 MJH PUBG Royale</h1>
-        <p class="subtitle">Multiplayer Battle Royale PWA Game</p>
+  <div class="container">
+    <h1>🎮 MJH PUBG Royale</h1>
+    <p class="subtitle">Multiplayer Battle Royale PWA Game</p>
 
-        <button class="btn btn-primary" id="quick-play">🚀 Quick Play</button>
-        <button class="btn btn-secondary" id="create-room">🏠 Create Room</button>
-        <button class="btn btn-secondary" id="join-room">👥 Join Room</button>
+    <button class="btn btn-primary" id="quick-play">🚀 Quick Play</button>
+    <button class="btn btn-secondary" id="create-room">🏠 Create Room</button>
+    <button class="btn btn-secondary" id="join-room">👥 Join Room</button>
 
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Connecting to server...</p>
-        </div>
-
-        <div class="status" id="status">Ready to battle! 💥</div>
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Connecting to server...</p>
     </div>
 
-    <script>
-        window.addEventListener('online', () => {
-            document.getElementById('status').textContent = 'Online - Ready to play!';
-        });
+    <div class="status" id="status">Ready to battle! 💥</div>
+  </div>
 
-        window.addEventListener('offline', () => {
-            document.getElementById('status').innerHTML = 'Offline mode <br><small>Game will load when online</small>';
-        });
-
-        function showLoading() {
-            document.getElementById('loading').style.display = 'block';
-        }
-
-        function hideLoading() {
-            document.getElementById('loading').style.display = 'none';
-        }
-
-        function startGame() {
-            showLoading();
-            setTimeout(() => {
-                hideLoading();
-                alert(`🎮 Game starting! (Demo mode)
-
-Coming soon: Real multiplayer battle royale`);
-            }, 2000);
-        }
-
-        function createRoom() {
-            showLoading();
-            setTimeout(() => {
-                hideLoading();
-                alert('Room created! Share this code: ABC123');
-            }, 1500);
-        }
-
-        function joinRoom() {
-            const code = prompt('Enter room code:');
-            if (code) {
-                showLoading();
-                setTimeout(() => {
-                    hideLoading();
-                    alert(`Joined room ${code}! Waiting for players...`);
-                }, 1500);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('quick-play').addEventListener('click', startGame);
-            document.getElementById('create-room').addEventListener('click', createRoom);
-            document.getElementById('join-room').addEventListener('click', joinRoom);
-        });
-
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('create') === '1') {
-            window.addEventListener('load', () => {
-                setTimeout(() => {
-                    createRoom();
-                }, 300);
-            });
-        }
-
-        let deferredPrompt = null;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-        });
-
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt = null;
-            console.log('PWA installed');
-        });
-    </script>
+  <script type="module" src="apps/web/index.js"></script>
 </body>
 </html>
