@@ -1,14 +1,22 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: '*' },
+  cors: { origin: '*' }
 });
 
 const rooms = new Map();
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '..', '..')));
 
 function makePlayer(id) {
   return {
@@ -18,9 +26,29 @@ function makePlayer(id) {
     z: 0,
     rotY: 0,
     hp: 100,
-    ammo: 30,
+    ammo: 30
   };
 }
+
+app.get('/health', (_, res) => {
+  res.json({ ok: true });
+});
+
+app.post('/api/room', (_, res) => {
+  const roomCode = Math.random().toString(36).slice(2, 8).toUpperCase();
+  if (!rooms.has(roomCode)) rooms.set(roomCode, new Map());
+  res.json({ ok: true, roomCode });
+});
+
+app.post('/api/room/:roomCode', (req, res) => {
+  const roomCode = String(req.params.roomCode || '').toUpperCase();
+  if (!rooms.has(roomCode)) rooms.set(roomCode, new Map());
+  res.json({ ok: true, roomCode });
+});
+
+app.post('/api/match/start', (_, res) => {
+  res.json({ ok: true, matchId: `M-${Date.now()}` });
+});
 
 io.on('connection', (socket) => {
   socket.on('joinRoom', ({ roomId }) => {
@@ -38,7 +66,7 @@ io.on('connection', (socket) => {
 
     socket.emit('roomJoined', {
       roomId: room,
-      players: Array.from(players.values()),
+      players: Array.from(players.values())
     });
 
     socket.to(room).emit('playerJoined', makePlayer(socket.id));
@@ -71,8 +99,6 @@ io.on('connection', (socket) => {
     socket.to(room).emit('playerLeft', { id: socket.id });
   });
 });
-
-app.get('/health', (_, res) => res.json({ ok: true }));
 
 server.listen(3000, () => {
   console.log('Server running on http://localhost:3000');
