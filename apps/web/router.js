@@ -1,29 +1,33 @@
-// apps/web/router.js
-
-// খুব সিম্পল client-side router ডমিন
-function handleRoute(path) {
+function updateStatus(text) {
   const $status = document.getElementById('status');
+  if ($status) $status.textContent = text;
+}
 
+function handleRoute(path) {
   if (path === '/' || path === '') {
-    $status.textContent = 'Home page';
-  } else if (path.startsWith('/room/')) {
-    const roomCode = path.split('/').pop();
-    $status.textContent = `Playing in room ${roomCode}`;
-  } else {
-    $status.textContent = 'Page not found';
+    updateStatus('Ready to battle! 💥');
+    return;
   }
+
+  if (path.startsWith('/room/')) {
+    const roomCode = path.split('/').pop();
+    updateStatus(`Playing in room ${roomCode}`);
+    return;
+  }
+
+  updateStatus('Page not found');
 }
 
 export function init() {
   const handlePopstate = () => {
     handleRoute(window.location.pathname);
   };
+
   window.addEventListener('popstate', handlePopstate);
-  handlePopstate(); // initial load
+  handlePopstate();
 }
 
-// লিঙ্ক ক্লিকের সময় pushState করে
 export function navigate(href) {
-  history.pushState(null, null, href);
+  history.pushState(null, '', href);
   handleRoute(window.location.pathname);
 }
