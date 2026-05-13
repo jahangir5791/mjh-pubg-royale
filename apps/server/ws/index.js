@@ -1,24 +1,31 @@
 // apps/server/ws/index.js
-// MJH PUBG Royale - Real WebSocket Server
+// MJH PUBG Royale - Complete WebSocket Server with HTTPS support
 
 import { WebSocketServer } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
+import http from 'http';
 
-const wss = new WebSocketServer({ port: 8080 });
+const server = http.createServer();
+const wss = new WebSocketServer({ server });
 
 // রুম ও প্লেয়ার ডাটা
-const rooms = new Map(); // roomCode -> { players: Map(ws -> playerData), maxPlayers }
-const clients = new Map(); // ws -> { playerId, roomCode, playerName }
+const rooms = new Map();
+const clients = new Map();
 
-console.log('🎮 WebSocket Server running on port 8080');
+console.log('🎮 WebSocket Server initializing...');
 
-wss.on('connection', (ws) => {
+server.listen(8080, '0.0.0.0', () => {
+  console.log('✅ WebSocket Server running on port 8080');
+  console.log('✅ Listening on all network interfaces (0.0.0.0)');
+});
+
+wss.on('connection', (ws, req) => {
   const playerId = uuidv4();
+  const ip = req.socket.remoteAddress;
   clients.set(ws, { playerId, roomCode: null, playerName: null });
   
-  console.log(`✅ Player connected: ${playerId}`);
+  console.log(`✅ Player connected: ${playerId} from ${ip}`);
 
-  // সংযোগ নিশ্চিতকরণ
   ws.send(JSON.stringify({
     type: 'connected',
     playerId: playerId,
@@ -31,43 +38,30 @@ wss.on('connection', (ws) => {
       const client = clients.get(ws);
       
       switch(data.type) {
-        
         case 'quick_play':
           handleQuickPlay(ws, client);
           break;
-          
         case 'create_room':
           handleCreateRoom(ws, client, data.roomName);
           break;
-          
         case 'join_room':
           handleJoinRoom(ws, client, data.roomCode, data.playerName);
           break;
-          
         case 'leave_room':
           handleLeaveRoom(ws, client);
           break;
-          
         case 'player_ready':
           handlePlayerReady(ws, client);
           break;
-          
         case 'update_position':
           handlePlayerPosition(ws, client, data.position);
           break;
-          
         default:
-          ws.send(JSON.stringify({
-            type: 'error',
-            message: 'Unknown command'
-          }));
+          ws.send(JSON.stringify({ type: 'error', message: 'Unknown command' }));
       }
     } catch(err) {
       console.error('Error parsing message:', err);
-      ws.send(JSON.stringify({
-        type: 'error',
-        message: 'Invalid message format'
-      }));
+      ws.send(JSON.stringify({ type: 'error', message: 'Invalid message format' }));
     }
   });
 
@@ -79,12 +73,15 @@ wss.on('connection', (ws) => {
     clients.delete(ws);
     console.log(`❌ Player disconnected: ${playerId}`);
   });
+  
+  ws.on('error', (err) => {
+    console.error(`WebSocket error for ${playerId}:`, err.message);
+  });
 });
 
-// ============= হ্যান্ডলার ফাংশন =============
+// ============= হ্যান্ডলার ফাংশন (আগের মতোই আছে) =============
 
 function handleQuickPlay(ws, client) {
-  // খালি রুম খোঁজা বা নতুন তৈরি
   let availableRoom = null;
   for (let [code, room] of rooms) {
     if (room.players.size < room.maxPlayers) {
@@ -111,19 +108,13 @@ function handleJoinRoom(ws, client, roomCode, playerName) {
   const finalName = playerName || `Soldier_${client.playerId.slice(0,6)}`;
   
   if (!rooms.has(roomCode)) {
-    ws.send(JSON.stringify({
-      type: 'error',
-      message: 'Room not found'
-    }));
+    ws.send(JSON.stringify({ type: 'error', message: 'Room not found' }));
     return;
   }
   
   const room = rooms.get(roomCode);
   if (room.players.size >= room.maxPlayers) {
-    ws.send(JSON.stringify({
-      type: 'error',
-      message: 'Room is full'
-    }));
+    ws.send(JSON.stringify({ type: 'error', message: 'Room is full' }));
     return;
   }
   
@@ -137,14 +128,13 @@ function handleLeaveRoom(ws, client) {
   if (room) {
     room.players.delete(ws);
     
-    // রুমে সবাইকে জানানো
     broadcastToRoom(client.roomCode, {
       type: 'player_left',
       playerId: client.playerId,
-      playerName: client.playerName
+      playerName: client.playerName,
+      players: getPlayersList(room)
     });
     
-    // রুম খালি থাকলে ডিলিট
     if (room.players.size === 0) {
       rooms.delete(client.roomCode);
       console.log(`🗑️ Room deleted: ${client.roomCode}`);
@@ -169,22 +159,22 @@ function handlePlayerReady(ws, client) {
     if (player) {
       player.ready = true;
       
-      // সবাই ready কিনা চেক
       const allReady = Array.from(room.players.values()).every(p => p.ready === true);
+      const playersList = getPlayersList(room);
       
       broadcastToRoom(client.roomCode, {
         type: 'player_ready_update',
         playerId: client.playerId,
         playerName: client.playerName,
         ready: true,
-        allReady: allReady
+        allReady: allReady,
+        players: playersList
       });
       
-      // সবাই ready হলে গেম স্টার্ট
       if (allReady && room.players.size >= 2) {
         broadcastToRoom(client.roomCode, {
           type: 'game_start',
-          message: 'Match starting in 3...2...1...',
+          message: 'Match starting!',
           timestamp: Date.now()
         });
       }
@@ -201,13 +191,20 @@ function handlePlayerPosition(ws, client, position) {
     playerName: client.playerName,
     position: position,
     timestamp: Date.now()
-  }, ws); // নিজেকে ছাড়া broadcast
+  }, ws);
 }
-
-// ============= ইউটিলিটি ফাংশন =============
 
 function generateRoomCode() {
   return 'MJH' + Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+function getPlayersList(room) {
+  return Array.from(room.players.values()).map(p => ({
+    id: p.id,
+    name: p.name,
+    isHost: p.isHost,
+    ready: p.ready
+  }));
 }
 
 function createNewRoom(ws, client, roomCode, playerName, roomDisplayName) {
@@ -220,7 +217,6 @@ function createNewRoom(ws, client, roomCode, playerName, roomDisplayName) {
   
   rooms.set(roomCode, room);
   
-  // হোস্ট যোগ করা
   room.players.set(ws, {
     id: client.playerId,
     name: playerName,
@@ -238,7 +234,7 @@ function createNewRoom(ws, client, roomCode, playerName, roomDisplayName) {
     roomName: roomDisplayName,
     playerName: playerName,
     isHost: true,
-    players: [{ id: client.playerId, name: playerName, isHost: true, ready: false }]
+    players: getPlayersList(room)
   }));
   
   console.log(`🏠 Room created: ${roomCode} by ${playerName}`);
@@ -260,29 +256,20 @@ function joinRoomByCode(ws, client, roomCode, playerName) {
   client.roomCode = roomCode;
   client.playerName = playerName;
   
-  // বর্তমান প্লেয়ারদের লিস্ট
-  const playersList = Array.from(room.players.values()).map(p => ({
-    id: p.id,
-    name: p.name,
-    isHost: p.isHost,
-    ready: p.ready
-  }));
-  
   ws.send(JSON.stringify({
     type: 'room_joined',
     roomCode: roomCode,
     roomName: room.name,
     playerName: playerName,
     isHost: false,
-    players: playersList
+    players: getPlayersList(room)
   }));
   
-  // অন্যদের জানানো
   broadcastToRoom(roomCode, {
     type: 'player_joined',
     playerId: client.playerId,
     playerName: playerName,
-    players: playersList
+    players: getPlayersList(room)
   });
   
   console.log(`👥 ${playerName} joined room ${roomCode}`);
@@ -299,5 +286,3 @@ function broadcastToRoom(roomCode, message, excludeWs = null) {
     }
   }
 }
-
-// npm install ws uuid চালান
