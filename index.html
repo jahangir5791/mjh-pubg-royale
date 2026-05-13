@@ -48,6 +48,7 @@
     }
     
     button:hover { transform: scale(1.05); }
+    button:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
     
     input {
       padding: 10px;
@@ -58,6 +59,8 @@
       color: white;
       width: 200px;
     }
+    
+    input::placeholder { color: rgba(255,255,255,0.6); }
     
     #status {
       position: fixed;
@@ -86,6 +89,8 @@
     .players-list {
       margin-top: 10px;
       font-size: 12px;
+      max-height: 150px;
+      overflow-y: auto;
     }
     
     .player-item {
@@ -96,6 +101,19 @@
     }
     
     .hidden { display: none; }
+    
+    #gameStatus {
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #ffaa00;
+    }
+    
+    @media (max-width: 600px) {
+      .panel { max-width: 280px; padding: 15px; }
+      button { padding: 8px 16px; font-size: 12px; }
+      h1 { font-size: 20px; }
+    }
   </style>
 </head>
 <body>
@@ -142,6 +160,8 @@
     let currentRoom = null;
     let isReady = false;
     let gameStarted = false;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
     
     // 3D সেটআপ
     const scene = new THREE.Scene();
@@ -182,14 +202,13 @@
     backLight.position.set(0, 5, -5);
     scene.add(backLight);
     
-    // প্লেয়ার অবজেক্ট (স্থানীয়)
+    // প্লেয়ার অবজেক্ট
     let localPlayerMesh = null;
-    const otherPlayers = new Map(); // playerId -> mesh
+    const otherPlayers = new Map();
     
     function createPlayerMesh(color = 0xff6b6b, isLocal = false) {
       const group = new THREE.Group();
       
-      // বডি
       const bodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.8);
       const bodyMat = new THREE.MeshStandardMaterial({ color: color, emissive: isLocal ? 0x442200 : 0x000000 });
       const body = new THREE.Mesh(bodyGeo, bodyMat);
@@ -197,7 +216,6 @@
       body.castShadow = true;
       group.add(body);
       
-      // হেড
       const headGeo = new THREE.SphereGeometry(0.5, 32, 32);
       const headMat = new THREE.MeshStandardMaterial({ color: 0xffccaa });
       const head = new THREE.Mesh(headGeo, headMat);
@@ -205,7 +223,6 @@
       head.castShadow = true;
       group.add(head);
       
-      // হেলমেট (PUBG স্টাইল)
       const helmetGeo = new THREE.CylinderGeometry(0.55, 0.6, 0.3, 8);
       const helmetMat = new THREE.MeshStandardMaterial({ color: 0xcc8844, metalness: 0.7 });
       const helmet = new THREE.Mesh(helmetGeo, helmetMat);
@@ -215,11 +232,9 @@
       return group;
     }
     
-    // স্থানীয় প্লেয়ার তৈরি
     localPlayerMesh = createPlayerMesh(0xff6b6b, true);
     scene.add(localPlayerMesh);
     
-    // ক্যামেরা ফলো
     function updateCamera() {
       if (localPlayerMesh) {
         const targetPos = localPlayerMesh.position.clone();
@@ -256,11 +271,9 @@
         newPos.z = Math.max(-22, Math.min(22, newPos.z));
         localPlayerMesh.position.copy(newPos);
         
-        // ঘোরানো
         const angle = Math.atan2(moveX, moveZ);
         localPlayerMesh.rotation.y = angle;
         
-        // পজিশন আপডেট সার্ভারে পাঠানো
         if (ws && ws.readyState === WebSocket.OPEN) {
           const pos = { x: localPlayerMesh.position.x, y: 0, z: localPlayerMesh.position.z };
           if (Math.hypot(pos.x - lastSentPosition.x, pos.z - lastSentPosition.z) > 0.5) {
@@ -282,27 +295,57 @@
     const leaveBtn = document.getElementById('leaveBtn');
     const gameStatusDiv = document.getElementById('gameStatus');
     
-    // WebSocket সংযোগ স্থাপন
+    // ============= আপডেটেড WebSocket সংযোগ (HTTPS/WSS সাপোর্ট) =============
     function connectWebSocket() {
-      ws = new WebSocket('ws://localhost:8080');
+      // প্রোটোকল ডিটেক্ট করুন
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.hostname;
+      const port = ':8080';
+      
+      // সঠিক WebSocket URL তৈরি করুন
+      const wsUrl = `${protocol}//${host}${port}`;
+      
+      console.log('Connecting to:', wsUrl);
+      statusDiv.textContent = '🔌 Connecting to server...';
+      
+      ws = new WebSocket(wsUrl);
       
       ws.onopen = () => {
+        console.log('WebSocket connected successfully');
         statusDiv.textContent = '✅ Connected to server! Ready to battle!';
         statusDiv.style.color = '#0f0';
+        reconnectAttempts = 0;
       };
       
       ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        handleServerMessage(data);
+        try {
+          const data = JSON.parse(event.data);
+          handleServerMessage(data);
+        } catch (err) {
+          console.error('Error parsing message:', err);
+        }
       };
       
       ws.onerror = (error) => {
-        statusDiv.textContent = '❌ Connection error! Make sure server is running.';
+        console.error('WebSocket error:', error);
+        statusDiv.textContent = '❌ Connection error! Make sure server is running on port 8080';
         statusDiv.style.color = '#f00';
       };
       
       ws.onclose = () => {
+        console.log('WebSocket closed');
         statusDiv.textContent = '🔌 Disconnected from server. Refresh to reconnect.';
+        statusDiv.style.color = '#ff0';
+        
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          setTimeout(() => {
+            if (ws && ws.readyState === WebSocket.CLOSED) {
+              console.log(`Reconnecting... attempt ${reconnectAttempts}`);
+              connectWebSocket();
+            }
+          }, 3000);
+        }
       };
     }
     
@@ -321,19 +364,19 @@
           lobbyPanel.classList.add('hidden');
           gamePanel.classList.remove('hidden');
           statusDiv.textContent = `🎯 Joined room ${data.roomCode} as ${data.playerName}`;
+          gameStatusDiv.textContent = 'Waiting for players to ready up...';
           break;
           
         case 'player_joined':
         case 'player_left':
         case 'player_ready_update':
-          if (currentRoom) updatePlayersList(data.players);
+          if (currentRoom && data.players) updatePlayersList(data.players);
           break;
           
         case 'game_start':
           gameStarted = true;
           gameStatusDiv.textContent = '🎬 GAME STARTED! Move with WASD/Arrows';
           statusDiv.textContent = '🔫 Battle Royale Mode Active!';
-          // স্পন পজিশন র‍্যান্ডম
           localPlayerMesh.position.set(
             (Math.random() - 0.5) * 30,
             0,
@@ -342,14 +385,14 @@
           break;
           
         case 'player_moved':
-          if (data.playerId !== playerId) {
+          if (data.playerId !== playerId && data.position) {
             let otherMesh = otherPlayers.get(data.playerId);
-            if (!otherMesh && data.position) {
+            if (!otherMesh) {
               otherMesh = createPlayerMesh(0x4ecdc4, false);
               scene.add(otherMesh);
               otherPlayers.set(data.playerId, otherMesh);
             }
-            if (otherMesh && data.position) {
+            if (otherMesh) {
               otherMesh.position.set(data.position.x, data.position.y, data.position.z);
             }
           }
@@ -357,6 +400,12 @@
           
         case 'error':
           statusDiv.textContent = `⚠️ ${data.message}`;
+          statusDiv.style.color = '#f90';
+          setTimeout(() => {
+            if (statusDiv.textContent.includes(data.message)) {
+              statusDiv.style.color = '#0f0';
+            }
+          }, 3000);
           break;
       }
     }
@@ -374,12 +423,16 @@
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'quick_play' }));
         statusDiv.textContent = '🔍 Searching for match...';
+      } else {
+        statusDiv.textContent = '❌ Not connected to server!';
       }
     };
     
     document.getElementById('createRoomBtn').onclick = () => {
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'create_room', roomName: 'MJH Battle' }));
+      } else {
+        statusDiv.textContent = '❌ Not connected to server!';
       }
     };
     
@@ -390,40 +443,54 @@
     document.getElementById('confirmJoin').onclick = () => {
       const code = document.getElementById('roomCode').value.trim().toUpperCase();
       const name = document.getElementById('playerName').value.trim() || `Warrior_${Math.floor(Math.random()*1000)}`;
-      if (code && ws) {
+      if (code && ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'join_room', roomCode: code, playerName: name }));
         document.getElementById('joinInput').classList.add('hidden');
+        document.getElementById('roomCode').value = '';
+        document.getElementById('playerName').value = '';
+      } else if (!code) {
+        statusDiv.textContent = '⚠️ Please enter a room code!';
+      } else {
+        statusDiv.textContent = '❌ Not connected to server!';
       }
     };
     
     document.getElementById('cancelJoin').onclick = () => {
       document.getElementById('joinInput').classList.add('hidden');
+      document.getElementById('roomCode').value = '';
+      document.getElementById('playerName').value = '';
     };
     
     readyBtn.onclick = () => {
-      if (ws && currentRoom && !isReady) {
+      if (ws && currentRoom && !isReady && ws.readyState === WebSocket.OPEN) {
         isReady = true;
         ws.send(JSON.stringify({ type: 'player_ready' }));
         readyBtn.disabled = true;
         readyBtn.textContent = '✅ Ready!';
+        gameStatusDiv.textContent = 'You are ready! Waiting for host to start...';
       }
     };
     
     leaveBtn.onclick = () => {
-      if (ws && currentRoom) {
+      if (ws && currentRoom && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'leave_room' }));
         lobbyPanel.classList.remove('hidden');
         gamePanel.classList.add('hidden');
         currentRoom = null;
         gameStarted = false;
         isReady = false;
+        gameStatusDiv.textContent = '';
         readyBtn.disabled = false;
         readyBtn.textContent = '✅ Ready';
         localPlayerMesh.position.set(0, 0, 0);
+        
+        otherPlayers.forEach((mesh, id) => {
+          scene.remove(mesh);
+          otherPlayers.delete(id);
+        });
       }
     };
     
-    // অ্যানিমেশন লুপ
     function animate() {
       requestAnimationFrame(animate);
       handleMovement();
@@ -435,7 +502,7 @@
     // সার্ভার কানেক্ট
     connectWebSocket();
     
-    // তিন-মাত্রিক দৃশ্যে এলোমেলো গাছ যোগ করা
+    // গাছ যোগ করা
     for (let i = 0; i < 50; i++) {
       const treeGroup = new THREE.Group();
       const trunkGeo = new THREE.CylinderGeometry(0.4, 0.5, 1.2);
@@ -456,6 +523,14 @@
       treeGroup.position.z = Math.sin(angle) * radius;
       scene.add(treeGroup);
     }
+    
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    
+    console.log('MJH PUBG Royale - Game initialized');
   </script>
 </body>
 </html>
