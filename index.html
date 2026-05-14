@@ -144,7 +144,7 @@
       <div id="gameStatus"></div>
     </div>
   </div>
-  <div id="status">🔌 Connecting to server...</div>
+  <div id="status">🔌 Connecting to Render server...</div>
 
   <script type="importmap">
     {
@@ -163,7 +163,7 @@
     let isReady = false;
     let gameStarted = false;
     let reconnectAttempts = 0;
-    const maxReconnectAttempts = 3;
+    const maxReconnectAttempts = 5;
     
     // 3D সেটআপ
     const scene = new THREE.Scene();
@@ -297,19 +297,19 @@
     const leaveBtn = document.getElementById('leaveBtn');
     const gameStatusDiv = document.getElementById('gameStatus');
     
-    // ============= WebSocket সংযোগ - Render লাইভ সার্ভার =============
+    // ============= গুরুত্বপূর্ণ: Render সার্ভারে WebSocket সংযোগ =============
     function connectWebSocket() {
-      // আপনার Render-এর লাইভ সার্ভারের URL ব্যবহার করুন
-      const wsUrl = `wss://mjh-pubg-server.onrender.com`;
+      // সরাসরি Render সার্ভারের URL ব্যবহার করুন
+      const wsUrl = 'wss://mjh-pubg-server.onrender.com';
       
-      console.log('🔌 Connecting to WebSocket:', wsUrl);
-      statusDiv.textContent = `🔌 Connecting to Render server...`;
+      console.log('🔌 Connecting to Render WebSocket:', wsUrl);
+      statusDiv.textContent = '🔌 Connecting to Render server (mjh-pubg-server.onrender.com)...';
       statusDiv.className = 'connecting';
       
       ws = new WebSocket(wsUrl);
       
       ws.onopen = () => {
-        console.log('✅ WebSocket connected to Render!');
+        console.log('✅ Connected to Render WebSocket server!');
         statusDiv.textContent = '✅ Connected to Render server! Ready to battle!';
         statusDiv.className = 'connected';
         reconnectAttempts = 0;
@@ -318,7 +318,7 @@
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log('📨 Message:', data.type);
+          console.log('📨 Message from server:', data.type);
           handleServerMessage(data);
         } catch (err) {
           console.error('Parse error:', err);
@@ -327,23 +327,24 @@
       
       ws.onerror = (error) => {
         console.error('❌ WebSocket error:', error);
-        statusDiv.textContent = '❌ Connection error! Render server might be waking up...';
+        statusDiv.textContent = '❌ Connection error! Render server might be waking up. Please wait 30 seconds and refresh.';
         statusDiv.className = 'disconnected';
       };
       
       ws.onclose = () => {
         console.log('🔌 WebSocket disconnected');
-        statusDiv.textContent = '🔌 Disconnected from Render server. The free tier may have spun down. Waiting...';
+        statusDiv.textContent = '🔌 Disconnected from Render server. The free tier spins down with inactivity. Reconnecting...';
         statusDiv.className = 'disconnected';
         
         if (reconnectAttempts < maxReconnectAttempts) {
           reconnectAttempts++;
+          const delay = 5000;
+          console.log(`Reconnect attempt ${reconnectAttempts}/${maxReconnectAttempts} in ${delay/1000}s...`);
           setTimeout(() => {
-            if (ws.readyState === WebSocket.CLOSED) {
-              console.log(`Reconnect attempt ${reconnectAttempts}...`);
+            if (!ws || ws.readyState === WebSocket.CLOSED) {
               connectWebSocket();
             }
-          }, 5000);
+          }, delay);
         }
       };
     }
@@ -353,10 +354,20 @@
         case 'connected':
           playerId = data.playerId;
           console.log('🎮 Player ID:', playerId);
-          statusDiv.textContent = `✅ Connected! ID: ${playerId.slice(0,8)}`;
+          statusDiv.textContent = `✅ Connected to Render! ID: ${playerId.slice(0,8)}`;
           break;
           
         case 'room_created':
+          currentRoom = data.roomCode;
+          roomCodeDisplay.textContent = data.roomCode;
+          updatePlayersList(data.players);
+          lobbyPanel.classList.add('hidden');
+          gamePanel.classList.remove('hidden');
+          statusDiv.textContent = `🎯 Room created: ${data.roomCode}`;
+          gameStatusDiv.textContent = 'Share this code with friends! Click READY when ready.';
+          console.log('🏠 Room created:', data.roomCode);
+          break;
+          
         case 'room_joined':
           currentRoom = data.roomCode;
           roomCodeDisplay.textContent = data.roomCode;
@@ -365,6 +376,7 @@
           gamePanel.classList.remove('hidden');
           statusDiv.textContent = `🎯 Joined room ${data.roomCode}`;
           gameStatusDiv.textContent = 'Click READY when ready!';
+          console.log('👥 Joined room:', data.roomCode);
           break;
           
         case 'player_joined':
@@ -385,6 +397,7 @@
           localPlayerMesh.position.set(
             (Math.random() - 0.5) * 30, 0, (Math.random() - 0.5) * 30
           );
+          console.log('🎮 Game started!');
           break;
           
         case 'player_moved':
@@ -394,6 +407,7 @@
               otherMesh = createPlayerMesh(0x4ecdc4, false);
               scene.add(otherMesh);
               otherPlayers.set(data.playerId, otherMesh);
+              console.log('➕ Added other player:', data.playerId);
             }
             if (otherMesh) {
               otherMesh.position.set(data.position.x, data.position.y, data.position.z);
@@ -402,6 +416,7 @@
           break;
           
         case 'error':
+          console.error('Server error:', data.message);
           statusDiv.textContent = `⚠️ ${data.message}`;
           setTimeout(() => {
             if (statusDiv.textContent.includes(data.message)) {
@@ -424,20 +439,24 @@
     document.getElementById('quickPlayBtn').onclick = () => {
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'quick_play' }));
-        statusDiv.textContent = '🔍 Searching for match...';
+        statusDiv.textContent = '🔍 Searching for match on Render server...';
+        console.log('Quick Play clicked');
       } else {
-        statusDiv.textContent = '❌ Not connected to Render server! Waiting for connection...';
+        statusDiv.textContent = '❌ Not connected to Render server! Reconnecting...';
         statusDiv.className = 'disconnected';
+        connectWebSocket();
       }
     };
     
     document.getElementById('createRoomBtn').onclick = () => {
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'create_room', roomName: 'MJH Battle' }));
-        statusDiv.textContent = '🏠 Creating room...';
+        statusDiv.textContent = '🏠 Creating room on Render server...';
+        console.log('Create Room clicked');
       } else {
-        statusDiv.textContent = '❌ Not connected to Render server! Waiting for connection...';
+        statusDiv.textContent = '❌ Not connected to Render server! Reconnecting...';
         statusDiv.className = 'disconnected';
+        connectWebSocket();
       }
     };
     
@@ -453,6 +472,8 @@
         document.getElementById('joinInput').classList.add('hidden');
         document.getElementById('roomCode').value = '';
         document.getElementById('playerName').value = '';
+        statusDiv.textContent = `🔍 Joining room ${code}...`;
+        console.log('Join Room:', code, name);
       } else if (!code) {
         statusDiv.textContent = '⚠️ Please enter a room code!';
       } else {
@@ -473,6 +494,7 @@
         readyBtn.disabled = true;
         readyBtn.textContent = '✅ Ready!';
         gameStatusDiv.textContent = 'Waiting for other players...';
+        console.log('Player ready');
       }
     };
     
@@ -493,6 +515,7 @@
           scene.remove(mesh);
           otherPlayers.delete(id);
         });
+        console.log('Left room');
       }
     };
     
@@ -533,11 +556,10 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
     
-    // Render সার্ভারে সংযোগ শুরু করুন
+    // শুরু করুন - Render সার্ভারে সংযোগ
+    console.log('🎮 MJH PUBG Royale - Starting...');
+    console.log('💡 Connecting to Render WebSocket: wss://mjh-pubg-server.onrender.com');
     connectWebSocket();
-    
-    console.log('🎮 MJH PUBG Royale - Game initialized');
-    console.log('💡 Connected to Render WebSocket server: wss://mjh-pubg-server.onrender.com');
   </script>
 </body>
 </html>
