@@ -15,7 +15,7 @@ const clients = new Map();
 // ============= Render-এর জন্য পোর্ট কনফিগারেশন =============
 const PORT = process.env.PORT || 8080;
 
-// ============= হেলথ চেক এন্ডপয়েন্ট (শুধু এই অংশ যোগ করা) =============
+// ============= হেলথ চেক এন্ডপয়েন্ট =============
 server.on('request', (req, res) => {
   if (req.url === '/health' || req.url === '/') {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -93,7 +93,7 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-// ============= হ্যান্ডলার ফাংশন (সবই আছে) =============
+// ============= হ্যান্ডলার ফাংশন =============
 
 function handleQuickPlay(ws, client) {
   let availableRoom = null;
@@ -164,6 +164,7 @@ function handleLeaveRoom(ws, client) {
   }));
 }
 
+// ============= পরিবর্তিত handlePlayerReady (সিঙ্গেল প্লেয়ার সাপোর্ট) =============
 function handlePlayerReady(ws, client) {
   if (!client.roomCode) return;
   
@@ -175,6 +176,7 @@ function handlePlayerReady(ws, client) {
       
       const allReady = Array.from(room.players.values()).every(p => p.ready === true);
       const playersList = getPlayersList(room);
+      const playerCount = room.players.size;
       
       broadcastToRoom(client.roomCode, {
         type: 'player_ready_update',
@@ -185,12 +187,15 @@ function handlePlayerReady(ws, client) {
         players: playersList
       });
       
-      if (allReady && room.players.size >= 2) {
+      // গেম স্টার্টের কন্ডিশন:
+      // 1 জন থাকলেও স্টার্ট হবে (সিঙ্গেল প্লেয়ার)
+      if (allReady || playerCount >= 1) {
         broadcastToRoom(client.roomCode, {
           type: 'game_start',
           message: 'Match starting!',
           timestamp: Date.now()
         });
+        console.log(`🎮 Game started in room ${client.roomCode} with ${playerCount} player(s)`);
       }
     }
   }
@@ -221,10 +226,11 @@ function getPlayersList(room) {
   }));
 }
 
+// ============= পরিবর্তিত createNewRoom (সর্বোচ্চ ১০ প্লেয়ার) =============
 function createNewRoom(ws, client, roomCode, playerName, roomDisplayName) {
   const room = {
     name: roomDisplayName,
-    maxPlayers: 4,
+    maxPlayers: 10,
     players: new Map(),
     createdAt: Date.now()
   };
@@ -251,7 +257,7 @@ function createNewRoom(ws, client, roomCode, playerName, roomDisplayName) {
     players: getPlayersList(room)
   }));
   
-  console.log(`🏠 Room created: ${roomCode} by ${playerName}`);
+  console.log(`🏠 Room created: ${roomCode} by ${playerName} (max players: 10)`);
 }
 
 function joinRoomByCode(ws, client, roomCode, playerName) {
@@ -286,7 +292,7 @@ function joinRoomByCode(ws, client, roomCode, playerName) {
     players: getPlayersList(room)
   });
   
-  console.log(`👥 ${playerName} joined room ${roomCode}`);
+  console.log(`👥 ${playerName} joined room ${roomCode} (${room.players.size}/${room.maxPlayers})`);
 }
 
 function broadcastToRoom(roomCode, message, excludeWs = null) {
