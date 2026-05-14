@@ -12,14 +12,25 @@ const wss = new WebSocketServer({ server });
 const rooms = new Map();
 const clients = new Map();
 
-// ============= সবচেয়ে গুরুত্বপূর্ণ: Render-এর জন্য পোর্ট কনফিগারেশন =============
+// ============= Render-এর জন্য পোর্ট কনফিগারেশন =============
 const PORT = process.env.PORT || 8080;
+
+// ============= হেলথ চেক এন্ডপয়েন্ট (শুধু এই অংশ যোগ করা) =============
+server.on('request', (req, res) => {
+  if (req.url === '/health' || req.url === '/') {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('OK - WebSocket Server Running');
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+});
 
 console.log('🎮 WebSocket Server initializing...');
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ WebSocket Server running on port ${PORT}`);
-  console.log(`✅ Listening on all network interfaces (0.0.0.0:${PORT})`);
+  console.log(`✅ Health check available at http://localhost:${PORT}/health`);
 });
 
 wss.on('connection', (ws, req) => {
@@ -82,7 +93,7 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-// ============= হ্যান্ডলার ফাংশন =============
+// ============= হ্যান্ডলার ফাংশন (সবই আছে) =============
 
 function handleQuickPlay(ws, client) {
   let availableRoom = null;
