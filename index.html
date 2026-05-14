@@ -299,11 +299,11 @@
     
     // ============= গুরুত্বপূর্ণ: Render সার্ভারে WebSocket সংযোগ =============
     function connectWebSocket() {
-      // সরাসরি Render সার্ভারের URL ব্যবহার করুন
+      // সরাসরি Render সার্ভারের URL
       const wsUrl = 'wss://mjh-pubg-server.onrender.com';
       
       console.log('🔌 Connecting to Render WebSocket:', wsUrl);
-      statusDiv.textContent = '🔌 Connecting to Render server (mjh-pubg-server.onrender.com)...';
+      statusDiv.textContent = '🔌 Connecting to Render server...';
       statusDiv.className = 'connecting';
       
       ws = new WebSocket(wsUrl);
@@ -327,24 +327,23 @@
       
       ws.onerror = (error) => {
         console.error('❌ WebSocket error:', error);
-        statusDiv.textContent = '❌ Connection error! Render server might be waking up. Please wait 30 seconds and refresh.';
+        statusDiv.textContent = '❌ Connection error! Trying to reconnect...';
         statusDiv.className = 'disconnected';
       };
       
       ws.onclose = () => {
         console.log('🔌 WebSocket disconnected');
-        statusDiv.textContent = '🔌 Disconnected from Render server. The free tier spins down with inactivity. Reconnecting...';
+        statusDiv.textContent = '🔌 Disconnected. Reconnecting...';
         statusDiv.className = 'disconnected';
         
         if (reconnectAttempts < maxReconnectAttempts) {
           reconnectAttempts++;
-          const delay = 5000;
-          console.log(`Reconnect attempt ${reconnectAttempts}/${maxReconnectAttempts} in ${delay/1000}s...`);
           setTimeout(() => {
             if (!ws || ws.readyState === WebSocket.CLOSED) {
+              console.log(`Reconnect attempt ${reconnectAttempts}...`);
               connectWebSocket();
             }
-          }, delay);
+          }, 3000);
         }
       };
     }
@@ -354,7 +353,7 @@
         case 'connected':
           playerId = data.playerId;
           console.log('🎮 Player ID:', playerId);
-          statusDiv.textContent = `✅ Connected to Render! ID: ${playerId.slice(0,8)}`;
+          statusDiv.textContent = `✅ Connected! ID: ${playerId.slice(0,8)}`;
           break;
           
         case 'room_created':
@@ -364,7 +363,7 @@
           lobbyPanel.classList.add('hidden');
           gamePanel.classList.remove('hidden');
           statusDiv.textContent = `🎯 Room created: ${data.roomCode}`;
-          gameStatusDiv.textContent = 'Share this code with friends! Click READY when ready.';
+          gameStatusDiv.textContent = 'Share code with friends! Click READY.';
           console.log('🏠 Room created:', data.roomCode);
           break;
           
@@ -385,7 +384,7 @@
           if (currentRoom && data.players) {
             updatePlayersList(data.players);
             if (data.allReady) {
-              gameStatusDiv.textContent = '🎮 All players ready! Game starting...';
+              gameStatusDiv.textContent = '🎮 All ready! Game starting...';
             }
           }
           break;
@@ -439,10 +438,10 @@
     document.getElementById('quickPlayBtn').onclick = () => {
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'quick_play' }));
-        statusDiv.textContent = '🔍 Searching for match on Render server...';
+        statusDiv.textContent = '🔍 Searching for match...';
         console.log('Quick Play clicked');
       } else {
-        statusDiv.textContent = '❌ Not connected to Render server! Reconnecting...';
+        statusDiv.textContent = '❌ Not connected! Reconnecting...';
         statusDiv.className = 'disconnected';
         connectWebSocket();
       }
@@ -451,10 +450,10 @@
     document.getElementById('createRoomBtn').onclick = () => {
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'create_room', roomName: 'MJH Battle' }));
-        statusDiv.textContent = '🏠 Creating room on Render server...';
+        statusDiv.textContent = '🏠 Creating room...';
         console.log('Create Room clicked');
       } else {
-        statusDiv.textContent = '❌ Not connected to Render server! Reconnecting...';
+        statusDiv.textContent = '❌ Not connected! Reconnecting...';
         statusDiv.className = 'disconnected';
         connectWebSocket();
       }
@@ -477,7 +476,7 @@
       } else if (!code) {
         statusDiv.textContent = '⚠️ Please enter a room code!';
       } else {
-        statusDiv.textContent = '❌ Not connected to Render server!';
+        statusDiv.textContent = '❌ Not connected!';
       }
     };
     
@@ -529,7 +528,7 @@
     animate();
     
     // গাছ যোগ করা
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 35; i++) {
       const treeGroup = new THREE.Group();
       const trunkGeo = new THREE.CylinderGeometry(0.4, 0.5, 1.2);
       const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8B5A2B });
@@ -556,7 +555,7 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
     
-    // শুরু করুন - Render সার্ভারে সংযোগ
+    // শুরু করুন
     console.log('🎮 MJH PUBG Royale - Starting...');
     console.log('💡 Connecting to Render WebSocket: wss://mjh-pubg-server.onrender.com');
     connectWebSocket();
