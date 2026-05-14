@@ -1,5 +1,5 @@
 // apps/server/ws/index.js
-// MJH PUBG Royale - Complete WebSocket Server with HTTPS support
+// MJH PUBG Royale - Complete WebSocket Server for Render Deployment
 
 import { WebSocketServer } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,11 +12,14 @@ const wss = new WebSocketServer({ server });
 const rooms = new Map();
 const clients = new Map();
 
+// ============= সবচেয়ে গুরুত্বপূর্ণ: Render-এর জন্য পোর্ট কনফিগারেশন =============
+const PORT = process.env.PORT || 8080;
+
 console.log('🎮 WebSocket Server initializing...');
 
-server.listen(8080, '0.0.0.0', () => {
-  console.log('✅ WebSocket Server running on port 8080');
-  console.log('✅ Listening on all network interfaces (0.0.0.0)');
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ WebSocket Server running on port ${PORT}`);
+  console.log(`✅ Listening on all network interfaces (0.0.0.0:${PORT})`);
 });
 
 wss.on('connection', (ws, req) => {
@@ -79,7 +82,7 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-// ============= হ্যান্ডলার ফাংশন (আগের মতোই আছে) =============
+// ============= হ্যান্ডলার ফাংশন =============
 
 function handleQuickPlay(ws, client) {
   let availableRoom = null;
