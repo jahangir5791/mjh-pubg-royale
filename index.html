@@ -8,16 +8,37 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; font-family: 'Arial', sans-serif; }
     
-    /* UI ওভারলে */
+    /* UI ওভারলে - বাটন নিচে রাখার জন্য পরিবর্তন */
     #ui {
       position: fixed;
-      top: 20px;
-      left: 20px;
-      right: 20px;
+      bottom: 20px;
+      left: 0;
+      right: 0;
       z-index: 100;
       pointer-events: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     
+    /* বাটন কন্টেইনার - নিচের দিকে এক লাইনে */
+    .button-bar {
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 50px;
+      padding: 10px 20px;
+      pointer-events: auto;
+      border: 1px solid rgba(0,255,255,0.3);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      max-width: 95%;
+      margin: 0 auto;
+    }
+    
+    /* প্যানেল এখন উপরে থাকবে না, বাটন বার ব্যবহার করব */
     .panel {
       background: rgba(0,0,0,0.85);
       backdrop-filter: blur(10px);
@@ -27,37 +48,71 @@
       pointer-events: auto;
       border: 1px solid rgba(0,255,255,0.3);
       max-width: 350px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 200;
+    }
+    
+    /* গেম প্যানেল (রুমের ভিতরে) - ডান পাশে ছোট করে */
+    #gamePanel {
+      top: auto;
+      bottom: 80px;
+      left: 20px;
+      right: auto;
+      transform: none;
+      max-width: 250px;
+      background: rgba(0,0,0,0.9);
+      padding: 12px;
+      font-size: 12px;
+    }
+    
+    #gamePanel .players-list {
+      max-height: 100px;
+      font-size: 10px;
+    }
+    
+    #gamePanel button {
+      padding: 6px 12px;
+      font-size: 11px;
     }
     
     h1 {
       color: #ff6b6b;
-      font-size: 24px;
-      margin-bottom: 10px;
+      font-size: 20px;
+      margin-bottom: 8px;
+      text-align: center;
     }
     
-    button {
+    .button-bar button {
       background: linear-gradient(45deg, #ff6b6b, #feca57);
       border: none;
-      padding: 10px 20px;
-      margin: 5px;
-      border-radius: 50px;
+      padding: 8px 16px;
+      border-radius: 40px;
       color: white;
       font-weight: bold;
       cursor: pointer;
       transition: transform 0.2s;
+      font-size: 12px;
     }
     
-    button:hover { transform: scale(1.05); }
-    button:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
+    .button-bar button:hover { transform: scale(1.05); }
+    .button-bar button:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
+    
+    /* গাইডলাইন বাটন আলাদা স্টাইল */
+    #howToPlayBtn {
+      background: linear-gradient(45deg, #4ecdc4, #44a08d) !important;
+    }
     
     input {
-      padding: 10px;
+      padding: 8px 12px;
       margin: 5px;
       border-radius: 10px;
       border: none;
       background: rgba(255,255,255,0.2);
       color: white;
-      width: 200px;
+      width: 180px;
     }
     
     input::placeholder { color: rgba(255,255,255,0.6); }
@@ -68,32 +123,33 @@
       left: 20px;
       right: 20px;
       background: rgba(0,0,0,0.7);
-      padding: 10px;
+      padding: 8px;
       border-radius: 10px;
       text-align: center;
       font-family: monospace;
       z-index: 100;
-      font-size: 12px;
+      font-size: 11px;
     }
     
     .room-code {
       background: #ff6b6b;
-      padding: 5px 10px;
-      border-radius: 10px;
+      padding: 3px 8px;
+      border-radius: 8px;
       font-weight: bold;
       display: inline-block;
-      margin: 5px;
+      margin: 3px;
+      font-size: 11px;
     }
     
     .players-list {
-      margin-top: 10px;
-      font-size: 12px;
-      max-height: 150px;
+      margin-top: 8px;
+      font-size: 11px;
+      max-height: 120px;
       overflow-y: auto;
     }
     
     .player-item {
-      padding: 3px;
+      padding: 2px 5px;
       margin: 2px;
       background: rgba(255,255,255,0.1);
       border-radius: 5px;
@@ -102,8 +158,8 @@
     .hidden { display: none; }
     
     #gameStatus {
-      margin-top: 10px;
-      font-size: 14px;
+      margin-top: 8px;
+      font-size: 11px;
       font-weight: bold;
       color: #ffaa00;
     }
@@ -112,39 +168,149 @@
     .disconnected { color: #f00; }
     .connecting { color: #ff0; }
     
+    /* মোবাইলের জন্য */
     @media (max-width: 600px) {
-      .panel { max-width: 280px; padding: 15px; }
-      button { padding: 8px 16px; font-size: 12px; }
-      h1 { font-size: 20px; }
+      .button-bar { padding: 8px 12px; gap: 5px; }
+      .button-bar button { padding: 6px 12px; font-size: 10px; }
+      #gamePanel { max-width: 220px; padding: 8px; bottom: 70px; }
+      h1 { font-size: 16px; }
+    }
+    
+    /* গাইডলাইন মোডাল */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 300;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-content {
+      background: rgba(10,20,30,0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 350px;
+      max-height: 80%;
+      overflow-y: auto;
+      border: 1px solid #ff6b6b;
+      color: white;
+      font-size: 14px;
+    }
+    
+    .modal-content h2 {
+      color: #ff6b6b;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .modal-content h3 {
+      color: #4ecdc4;
+      margin: 15px 0 8px 0;
+    }
+    
+    .modal-content p {
+      margin: 5px 0;
+      line-height: 1.4;
+    }
+    
+    .modal-content ul {
+      margin: 5px 0 5px 20px;
+    }
+    
+    .close-modal {
+      background: #ff6b6b;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 30px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      width: 100%;
+    }
+    
+    .controls-info {
+      background: rgba(0,0,0,0.5);
+      border-radius: 10px;
+      padding: 10px;
+      margin: 10px 0;
     }
   </style>
 </head>
 <body>
   <div id="ui">
-    <div class="panel" id="lobbyPanel">
-      <h1>🏆 MJH PUBG Royale</h1>
+    <!-- নিচের বাটন বার - এক লাইনে সব বাটন -->
+    <div class="button-bar">
       <button id="quickPlayBtn">🎮 Quick Play</button>
       <button id="createRoomBtn">🏠 Create Room</button>
       <button id="joinRoomBtn">👥 Join Room</button>
-      
-      <div id="joinInput" class="hidden">
-        <input type="text" id="roomCode" placeholder="Room Code (MJHXXXX)">
-        <input type="text" id="playerName" placeholder="Your Name">
-        <button id="confirmJoin">Join</button>
-        <button id="cancelJoin">Cancel</button>
-      </div>
+      <button id="howToPlayBtn">📖 How to Play</button>
     </div>
     
+    <!-- জয়েন রুমের ইনপুট (আগের মত) -->
+    <div id="joinInput" class="panel hidden">
+      <h1>🔗 Join Room</h1>
+      <input type="text" id="roomCode" placeholder="Room Code (MJHXXXX)">
+      <input type="text" id="playerName" placeholder="Your Name">
+      <button id="confirmJoin">Join</button>
+      <button id="cancelJoin">Cancel</button>
+    </div>
+    
+    <!-- গেম প্যানেল (রুমের ভিতরে) -->
     <div class="panel hidden" id="gamePanel">
-      <div>Room: <span id="roomCodeDisplay" class="room-code"></span></div>
-      <div>Players: <span id="playerCount"></span>/4</div>
+      <div>🏠 Room: <span id="roomCodeDisplay" class="room-code"></span></div>
+      <div>👥 Players: <span id="playerCount"></span>/10</div>
       <div class="players-list" id="playersList"></div>
       <button id="readyBtn">✅ Ready</button>
-      <button id="leaveBtn">🚪 Leave Room</button>
+      <button id="leaveBtn">🚪 Leave</button>
       <div id="gameStatus"></div>
     </div>
   </div>
   <div id="status">🔌 Connecting to Render server...</div>
+
+  <!-- গাইডলাইন মোডাল -->
+  <div id="howToPlayModal" class="modal">
+    <div class="modal-content">
+      <h2>🎯 MJH PUBG Royale - How to Play</h2>
+      
+      <h3>🎮 Game Modes</h3>
+      <p>• <strong>Quick Play:</strong> একা খেলুন - সার্ভার নিজে নিজে ম্যাচ তৈরি করবে</p>
+      <p>• <strong>Create Room:</strong> রুম তৈরি করুন - বন্ধুদের কোড দিন</p>
+      <p>• <strong>Join Room:</strong> অন্যের রুমে যোগ দিন - রুম কোড দিয়ে</p>
+      
+      <h3>⌨️ Controls (কীবোর্ড নিয়ন্ত্রণ)</h3>
+      <div class="controls-info">
+        <p>🔼 <strong>W / ↑</strong> - সামনে যান</p>
+        <p>🔽 <strong>S / ↓</strong> - পিছনে যান</p>
+        <p>◀️ <strong>A / ←</strong> - বামে যান</p>
+        <p>▶️ <strong>D / →</strong> - ডানে যান</p>
+      </div>
+      
+      <h3>🏆 How to Win</h3>
+      <p>• শেষ পর্যন্ত বেঁচে থাকুন! সর্বশেষ বেঁচে থাকা প্লেয়ার বিজয়ী</p>
+      <p>• ম্যাপে ঘুরে বেড়ান, পজিশন নিন</p>
+      <p>• মাল্টিপ্লেয়ার মোডে বন্ধুদের সাথে প্রতিযোগিতা করুন</p>
+      
+      <h3>🛠️ Game Rules</h3>
+      <p>• ১-১০ জন পর্যন্ত খেলতে পারবেন</p>
+      <p>• সব প্লেয়ার "Ready" চাপলে গেম শুরু হবে</p>
+      <p>• সিঙ্গেল প্লেয়ার: শুধু আপনি রেডি চাপলেই গেম শুরু</p>
+      <p>• রুম কোড শেয়ার করে বন্ধুদের আমন্ত্রণ জানান</p>
+      
+      <h3>🎯 Tips</h3>
+      <p>• প্রথমবার খেললে Quick Play ব্যবহার করুন</p>
+      <p>• গেম শুরু হলে WASD/Arrow keys দিয়ে মুভ করুন</p>
+      <p>• 3D ক্যামেরা আপনার ক্যারেক্টার ফলো করে</p>
+      
+      <button class="close-modal" id="closeModalBtn">Got it! 🔥</button>
+    </div>
+  </div>
 
   <script type="importmap">
     {
@@ -297,9 +463,27 @@
     const leaveBtn = document.getElementById('leaveBtn');
     const gameStatusDiv = document.getElementById('gameStatus');
     
-    // ============= গুরুত্বপূর্ণ: Render সার্ভারে WebSocket সংযোগ =============
+    // গাইডলাইন মোডাল
+    const modal = document.getElementById('howToPlayModal');
+    const howToPlayBtn = document.getElementById('howToPlayBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    
+    howToPlayBtn.onclick = () => {
+      modal.style.display = 'flex';
+    };
+    
+    closeModalBtn.onclick = () => {
+      modal.style.display = 'none';
+    };
+    
+    window.onclick = (event) => {
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    };
+    
+    // WebSocket সংযোগ
     function connectWebSocket() {
-      // সরাসরি Render সার্ভারের URL
       const wsUrl = 'wss://mjh-pubg-server.onrender.com';
       
       console.log('🔌 Connecting to Render WebSocket:', wsUrl);
