@@ -297,20 +297,20 @@
     const leaveBtn = document.getElementById('leaveBtn');
     const gameStatusDiv = document.getElementById('gameStatus');
     
-    // ============= WebSocket সংযোগ (সবচেয়ে গুরুত্বপূর্ণ) =============
+    // ============= WebSocket সংযোগ - Render লাইভ সার্ভার =============
     function connectWebSocket() {
-      const host = window.location.hostname;
-      const wsUrl = `wss://${host}:8080`;
+      // আপনার Render-এর লাইভ সার্ভারের URL ব্যবহার করুন
+      const wsUrl = `wss://mjh-pubg-server.onrender.com`;
       
       console.log('🔌 Connecting to WebSocket:', wsUrl);
-      statusDiv.textContent = `🔌 Connecting to ${host}:8080...`;
+      statusDiv.textContent = `🔌 Connecting to Render server...`;
       statusDiv.className = 'connecting';
       
       ws = new WebSocket(wsUrl);
       
       ws.onopen = () => {
-        console.log('✅ WebSocket connected!');
-        statusDiv.textContent = '✅ Connected to server! Ready to battle!';
+        console.log('✅ WebSocket connected to Render!');
+        statusDiv.textContent = '✅ Connected to Render server! Ready to battle!';
         statusDiv.className = 'connected';
         reconnectAttempts = 0;
       };
@@ -327,13 +327,13 @@
       
       ws.onerror = (error) => {
         console.error('❌ WebSocket error:', error);
-        statusDiv.textContent = '❌ Connection error! Make sure server is running (npm start)';
+        statusDiv.textContent = '❌ Connection error! Render server might be waking up...';
         statusDiv.className = 'disconnected';
       };
       
       ws.onclose = () => {
         console.log('🔌 WebSocket disconnected');
-        statusDiv.textContent = '🔌 Disconnected from server. Make sure "npm start" is running.';
+        statusDiv.textContent = '🔌 Disconnected from Render server. The free tier may have spun down. Waiting...';
         statusDiv.className = 'disconnected';
         
         if (reconnectAttempts < maxReconnectAttempts) {
@@ -343,7 +343,7 @@
               console.log(`Reconnect attempt ${reconnectAttempts}...`);
               connectWebSocket();
             }
-          }, 3000);
+          }, 5000);
         }
       };
     }
@@ -426,7 +426,7 @@
         ws.send(JSON.stringify({ type: 'quick_play' }));
         statusDiv.textContent = '🔍 Searching for match...';
       } else {
-        statusDiv.textContent = '❌ Not connected to server! Run "npm start" in terminal.';
+        statusDiv.textContent = '❌ Not connected to Render server! Waiting for connection...';
         statusDiv.className = 'disconnected';
       }
     };
@@ -436,7 +436,7 @@
         ws.send(JSON.stringify({ type: 'create_room', roomName: 'MJH Battle' }));
         statusDiv.textContent = '🏠 Creating room...';
       } else {
-        statusDiv.textContent = '❌ Not connected to server! Run "npm start" in terminal.';
+        statusDiv.textContent = '❌ Not connected to Render server! Waiting for connection...';
         statusDiv.className = 'disconnected';
       }
     };
@@ -456,7 +456,7 @@
       } else if (!code) {
         statusDiv.textContent = '⚠️ Please enter a room code!';
       } else {
-        statusDiv.textContent = '❌ Not connected to server!';
+        statusDiv.textContent = '❌ Not connected to Render server!';
       }
     };
     
@@ -533,11 +533,11 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
     
-    // শুরু করুন
+    // Render সার্ভারে সংযোগ শুরু করুন
     connectWebSocket();
     
     console.log('🎮 MJH PUBG Royale - Game initialized');
-    console.log('💡 Make sure to run "npm start" in terminal!');
+    console.log('💡 Connected to Render WebSocket server: wss://mjh-pubg-server.onrender.com');
   </script>
 </body>
 </html>
