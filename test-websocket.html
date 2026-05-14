@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test - MJH PUBG</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #1a1a2e; color: white; text-align: center; }
+        button { padding: 15px 30px; font-size: 18px; margin: 10px; background: #ff6b6b; border: none; color: white; border-radius: 10px; }
+        #status { margin-top: 20px; padding: 15px; background: #16213e; border-radius: 10px; word-break: break-all; }
+        .connected { color: #0f0; }
+        .error { color: #f00; }
+    </style>
+</head>
+<body>
+    <h1>🔌 WebSocket Connection Test</h1>
+    <button id="testBtn">Test Render Connection</button>
+    <div id="status">Click the button to test</div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        
+        document.getElementById('testBtn').onclick = () => {
+            statusDiv.innerHTML = '🔄 Connecting to wss://mjh-pubg-server.onrender.com...';
+            statusDiv.className = '';
+            
+            const ws = new WebSocket('wss://mjh-pubg-server.onrender.com');
+            
+            ws.onopen = () => {
+                statusDiv.innerHTML = '✅ SUCCESS! Connected to Render WebSocket server!';
+                statusDiv.className = 'connected';
+                ws.send(JSON.stringify({ type: 'ping' }));
+            };
+            
+            ws.onerror = (error) => {
+                statusDiv.innerHTML = '❌ FAILED! Could not connect to Render server. Check your internet or server status.';
+                statusDiv.className = 'error';
+                console.error(error);
+            };
+            
+            ws.onmessage = (event) => {
+                console.log('Message:', event.data);
+            };
+            
+            ws.onclose = () => {
+                if (statusDiv.innerHTML.includes('SUCCESS')) {
+                    statusDiv.innerHTML = '🔌 Connection closed normally.';
+                }
+            };
+            
+            // 5 সেকেন্ড timeout
+            setTimeout(() => {
+                if (ws.readyState !== WebSocket.OPEN) {
+                    statusDiv.innerHTML = '⏰ Timeout! Render server not responding. It might be waking up. Try again in 30 seconds.';
+                    statusDiv.className = 'error';
+                }
+            }, 5000);
+        };
+    </script>
+</body>
+</html>
