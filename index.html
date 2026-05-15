@@ -8,17 +8,19 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; font-family: 'Arial', sans-serif; }
     
-    /* UI ওভারলে - বাটন নিচে রাখার জন্য পরিবর্তন */
+    /* UI ওভারলে - বাটন নিচে রাখার জন্য */
     #ui {
       position: fixed;
-      bottom: 20px;
+      bottom: 0;
       left: 0;
       right: 0;
       z-index: 100;
       pointer-events: none;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 20px;
     }
     
     /* বাটন কন্টেইনার - নিচের দিকে এক লাইনে */
@@ -26,56 +28,113 @@
       background: rgba(0,0,0,0.85);
       backdrop-filter: blur(10px);
       border-radius: 50px;
-      padding: 10px 20px;
+      padding: 12px 20px;
       pointer-events: auto;
       border: 1px solid rgba(0,255,255,0.3);
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 8px;
-      max-width: 95%;
+      gap: 12px;
+      max-width: 90%;
       margin: 0 auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
     
-    /* প্যানেল এখন উপরে থাকবে না, বাটন বার ব্যবহার করব */
-    .panel {
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 15px;
-      pointer-events: auto;
-      border: 1px solid rgba(0,255,255,0.3);
-      max-width: 350px;
+    /* জয়েন রুমের মডাল - মাঝখানে সুন্দর করে */
+    .modal-panel {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.95);
+      backdrop-filter: blur(15px);
+      border-radius: 25px;
+      padding: 25px;
+      pointer-events: auto;
+      border: 2px solid rgba(255,107,107,0.5);
+      max-width: 320px;
+      width: 85%;
       z-index: 200;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(255,107,107,0.3);
     }
     
-    /* গেম প্যানেল (রুমের ভিতরে) - ডান পাশে ছোট করে */
+    .modal-panel h1 {
+      color: #ff6b6b;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    
+    .modal-panel input {
+      padding: 12px 15px;
+      margin: 8px 0;
+      border-radius: 12px;
+      border: none;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      width: 100%;
+      font-size: 14px;
+    }
+    
+    .modal-panel input::placeholder {
+      color: rgba(255,255,255,0.6);
+    }
+    
+    .modal-panel button {
+      background: linear-gradient(45deg, #ff6b6b, #feca57);
+      border: none;
+      padding: 12px 20px;
+      margin: 8px 5px;
+      border-radius: 50px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+      width: calc(50% - 10px);
+    }
+    
+    .modal-panel button:hover {
+      transform: scale(1.02);
+    }
+    
+    #cancelJoin {
+      background: linear-gradient(45deg, #555, #333);
+    }
+    
+    /* গেম প্যানেল (রুমের ভিতরে) - ডান পাশে */
     #gamePanel {
+      position: fixed;
+      bottom: 90px;
+      right: 15px;
+      left: auto;
       top: auto;
-      bottom: 80px;
-      left: 20px;
-      right: auto;
       transform: none;
-      max-width: 250px;
       background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
       padding: 12px;
-      font-size: 12px;
+      border: 1px solid rgba(0,255,255,0.3);
+      max-width: 220px;
+      pointer-events: auto;
+      z-index: 150;
     }
     
     #gamePanel .players-list {
       max-height: 100px;
       font-size: 10px;
+      overflow-y: auto;
     }
     
     #gamePanel button {
-      padding: 6px 12px;
+      padding: 6px 10px;
       font-size: 11px;
+      margin: 3px;
+    }
+    
+    #gamePanel .room-code {
+      font-size: 10px;
+      padding: 2px 6px;
     }
     
     h1 {
@@ -88,13 +147,14 @@
     .button-bar button {
       background: linear-gradient(45deg, #ff6b6b, #feca57);
       border: none;
-      padding: 8px 16px;
+      padding: 10px 18px;
       border-radius: 40px;
       color: white;
       font-weight: bold;
       cursor: pointer;
       transition: transform 0.2s;
-      font-size: 12px;
+      font-size: 13px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
     
     .button-bar button:hover { transform: scale(1.05); }
@@ -105,30 +165,19 @@
       background: linear-gradient(45deg, #4ecdc4, #44a08d) !important;
     }
     
-    input {
-      padding: 8px 12px;
-      margin: 5px;
-      border-radius: 10px;
-      border: none;
-      background: rgba(255,255,255,0.2);
-      color: white;
-      width: 180px;
-    }
-    
-    input::placeholder { color: rgba(255,255,255,0.6); }
-    
     #status {
       position: fixed;
       bottom: 20px;
       left: 20px;
       right: 20px;
       background: rgba(0,0,0,0.7);
-      padding: 8px;
+      padding: 8px 12px;
       border-radius: 10px;
       text-align: center;
       font-family: monospace;
       z-index: 100;
       font-size: 11px;
+      pointer-events: none;
     }
     
     .room-code {
@@ -170,63 +219,64 @@
     
     /* মোবাইলের জন্য */
     @media (max-width: 600px) {
-      .button-bar { padding: 8px 12px; gap: 5px; }
-      .button-bar button { padding: 6px 12px; font-size: 10px; }
-      #gamePanel { max-width: 220px; padding: 8px; bottom: 70px; }
-      h1 { font-size: 16px; }
+      .button-bar { padding: 8px 12px; gap: 8px; }
+      .button-bar button { padding: 8px 14px; font-size: 11px; }
+      #gamePanel { max-width: 200px; padding: 8px; bottom: 80px; right: 8px; }
+      .modal-panel { padding: 20px; width: 90%; }
+      .modal-panel h1 { font-size: 20px; }
     }
     
     /* গাইডলাইন মোডাল */
-    .modal {
+    .guide-modal {
       display: none;
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.95);
       z-index: 300;
       justify-content: center;
       align-items: center;
     }
     
-    .modal-content {
-      background: rgba(10,20,30,0.95);
+    .guide-modal-content {
+      background: rgba(10,20,30,0.98);
       backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 20px;
+      border-radius: 25px;
+      padding: 25px;
       max-width: 350px;
-      max-height: 80%;
+      max-height: 85%;
       overflow-y: auto;
       border: 1px solid #ff6b6b;
       color: white;
       font-size: 14px;
     }
     
-    .modal-content h2 {
+    .guide-modal-content h2 {
       color: #ff6b6b;
       margin-bottom: 15px;
       text-align: center;
     }
     
-    .modal-content h3 {
+    .guide-modal-content h3 {
       color: #4ecdc4;
       margin: 15px 0 8px 0;
     }
     
-    .modal-content p {
+    .guide-modal-content p {
       margin: 5px 0;
       line-height: 1.4;
     }
     
-    .modal-content ul {
+    .guide-modal-content ul {
       margin: 5px 0 5px 20px;
     }
     
     .close-modal {
-      background: #ff6b6b;
+      background: linear-gradient(45deg, #ff6b6b, #feca57);
       border: none;
-      padding: 10px 20px;
+      padding: 12px 20px;
       border-radius: 30px;
       color: white;
       font-weight: bold;
@@ -237,7 +287,7 @@
     
     .controls-info {
       background: rgba(0,0,0,0.5);
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 10px;
       margin: 10px 0;
     }
@@ -253,16 +303,18 @@
       <button id="howToPlayBtn">📖 How to Play</button>
     </div>
     
-    <!-- জয়েন রুমের ইনপুট (আগের মত) -->
-    <div id="joinInput" class="panel hidden">
+    <!-- জয়েন রুমের মডাল (মাঝখানে) -->
+    <div id="joinModal" class="modal-panel hidden">
       <h1>🔗 Join Room</h1>
-      <input type="text" id="roomCode" placeholder="Room Code (MJHXXXX)">
-      <input type="text" id="playerName" placeholder="Your Name">
-      <button id="confirmJoin">Join</button>
-      <button id="cancelJoin">Cancel</button>
+      <input type="text" id="roomCode" placeholder="Room Code (MJHXXXX)" autocomplete="off">
+      <input type="text" id="playerName" placeholder="Your Name" autocomplete="off">
+      <div>
+        <button id="confirmJoin">Join</button>
+        <button id="cancelJoin">Cancel</button>
+      </div>
     </div>
     
-    <!-- গেম প্যানেল (রুমের ভিতরে) -->
+    <!-- গেম প্যানেল (রুমের ভিতরে - ডান পাশে) -->
     <div class="panel hidden" id="gamePanel">
       <div>🏠 Room: <span id="roomCodeDisplay" class="room-code"></span></div>
       <div>👥 Players: <span id="playerCount"></span>/10</div>
@@ -275,8 +327,8 @@
   <div id="status">🔌 Connecting to Render server...</div>
 
   <!-- গাইডলাইন মোডাল -->
-  <div id="howToPlayModal" class="modal">
-    <div class="modal-content">
+  <div id="howToPlayModal" class="guide-modal">
+    <div class="guide-modal-content">
       <h2>🎯 MJH PUBG Royale - How to Play</h2>
       
       <h3>🎮 Game Modes</h3>
@@ -333,8 +385,8 @@
     
     // 3D সেটআপ
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x050b1a);
-    scene.fog = new THREE.FogExp2(0x050b1a, 0.008);
+    scene.background = new THREE.Color(0x87CEEB); // আকাশী নীল ব্যাকগ্রাউন্ড
+    scene.fog = new THREE.FogExp2(0x87CEEB, 0.008);
     
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 5, 10);
@@ -345,9 +397,9 @@
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
     
-    // গ্রাউন্ড
+    // গ্রাউন্ড (ঘাস)
     const groundGeometry = new THREE.PlaneGeometry(50, 50);
-    const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x2c5f2d, roughness: 0.8, metalness: 0.2 });
+    const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x5c9e3e, roughness: 0.8, metalness: 0.1 });
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -1;
@@ -360,7 +412,7 @@
     scene.add(gridHelper);
     
     // লাইটিং
-    const ambientLight = new THREE.AmbientLight(0x404060);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(10, 20, 5);
@@ -370,37 +422,143 @@
     backLight.position.set(0, 5, -5);
     scene.add(backLight);
     
-    // প্লেয়ার অবজেক্ট
-    let localPlayerMesh = null;
-    const otherPlayers = new Map();
-    
-    function createPlayerMesh(color = 0xff6b6b, isLocal = false) {
+    // কার্টুন প্লেয়ার ক্রিয়েট ফাংশন (চোখ, মুখ, ক্যাপ সহ)
+    function createCartoonPlayer(color = 0xff6b6b, isLocal = false, playerName = "") {
       const group = new THREE.Group();
       
-      const bodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.8);
-      const bodyMat = new THREE.MeshStandardMaterial({ color: color, emissive: isLocal ? 0x442200 : 0x000000 });
+      // শরীর (গোলাকার টপ সহ)
+      const bodyGeo = new THREE.CylinderGeometry(0.6, 0.5, 1.2, 8);
+      const bodyMat = new THREE.MeshStandardMaterial({ color: color, emissive: isLocal ? 0x442200 : 0x000000, roughness: 0.3 });
       const body = new THREE.Mesh(bodyGeo, bodyMat);
-      body.position.y = 0.6;
+      body.position.y = 0.5;
       body.castShadow = true;
       group.add(body);
       
-      const headGeo = new THREE.SphereGeometry(0.5, 32, 32);
-      const headMat = new THREE.MeshStandardMaterial({ color: 0xffccaa });
+      // মাথা (বড় গোল)
+      const headGeo = new THREE.SphereGeometry(0.55, 32, 32);
+      const headMat = new THREE.MeshStandardMaterial({ color: 0xffdd99, roughness: 0.2 });
       const head = new THREE.Mesh(headGeo, headMat);
-      head.position.y = 1.2;
+      head.position.y = 1.1;
       head.castShadow = true;
       group.add(head);
       
-      const helmetGeo = new THREE.CylinderGeometry(0.55, 0.6, 0.3, 8);
-      const helmetMat = new THREE.MeshStandardMaterial({ color: 0xcc8844, metalness: 0.7 });
-      const helmet = new THREE.Mesh(helmetGeo, helmetMat);
-      helmet.position.y = 1.45;
-      group.add(helmet);
+      // চোখ (সাদা অংশ)
+      const eyeWhiteGeo = new THREE.SphereGeometry(0.12, 24, 24);
+      const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+      
+      const leftEyeWhite = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
+      leftEyeWhite.position.set(-0.2, 1.25, 0.55);
+      group.add(leftEyeWhite);
+      
+      const rightEyeWhite = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
+      rightEyeWhite.position.set(0.2, 1.25, 0.55);
+      group.add(rightEyeWhite);
+      
+      // পিউপিল (কালো অংশ)
+      const pupilGeo = new THREE.SphereGeometry(0.07, 24, 24);
+      const pupilMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+      
+      const leftPupil = new THREE.Mesh(pupilGeo, pupilMat);
+      leftPupil.position.set(-0.2, 1.24, 0.67);
+      group.add(leftPupil);
+      
+      const rightPupil = new THREE.Mesh(pupilGeo, pupilMat);
+      rightPupil.position.set(0.2, 1.24, 0.67);
+      group.add(rightPupil);
+      
+      // চোখের উজ্জ্বলতা (হাইলাইট)
+      const highlightGeo = new THREE.SphereGeometry(0.03, 16, 16);
+      const highlightMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+      
+      const leftHighlight = new THREE.Mesh(highlightGeo, highlightMat);
+      leftHighlight.position.set(-0.23, 1.27, 0.72);
+      group.add(leftHighlight);
+      
+      const rightHighlight = new THREE.Mesh(highlightGeo, highlightMat);
+      rightHighlight.position.set(0.17, 1.27, 0.72);
+      group.add(rightHighlight);
+      
+      // মুখ (হাসি)
+      const mouthGeo = new THREE.TorusGeometry(0.15, 0.03, 16, 32, Math.PI);
+      const mouthMat = new THREE.MeshStandardMaterial({ color: 0x884444 });
+      const mouth = new THREE.Mesh(mouthGeo, mouthMat);
+      mouth.rotation.x = 0.2;
+      mouth.rotation.z = 0.1;
+      mouth.position.set(0, 1.05, 0.58);
+      group.add(mouth);
+      
+      // ক্যাপ/হেলমেট
+      const capGeo = new THREE.CylinderGeometry(0.6, 0.65, 0.2, 8);
+      const capMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.5 });
+      const cap = new THREE.Mesh(capGeo, capMat);
+      cap.position.y = 1.45;
+      cap.castShadow = true;
+      group.add(cap);
+      
+      // ক্যাপের উপরের বাটন
+      const buttonGeo = new THREE.SphereGeometry(0.08, 8, 8);
+      const buttonMat = new THREE.MeshStandardMaterial({ color: 0xffaa44 });
+      const button = new THREE.Mesh(buttonGeo, buttonMat);
+      button.position.y = 1.55;
+      group.add(button);
+      
+      // হাত (ছোট সিলিন্ডার)
+      const armGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.5, 4);
+      const armMat = new THREE.MeshStandardMaterial({ color: color });
+      
+      const leftArm = new THREE.Mesh(armGeo, armMat);
+      leftArm.position.set(-0.5, 1.0, 0);
+      leftArm.rotation.z = 0.3;
+      group.add(leftArm);
+      
+      const rightArm = new THREE.Mesh(armGeo, armMat);
+      rightArm.position.set(0.5, 1.0, 0);
+      rightArm.rotation.z = -0.3;
+      group.add(rightArm);
+      
+      // পা
+      const legGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.5, 4);
+      const legMat = new THREE.MeshStandardMaterial({ color: color });
+      
+      const leftLeg = new THREE.Mesh(legGeo, legMat);
+      leftLeg.position.set(-0.25, 0.2, 0);
+      group.add(leftLeg);
+      
+      const rightLeg = new THREE.Mesh(legGeo, legMat);
+      rightLeg.position.set(0.25, 0.2, 0);
+      group.add(rightLeg);
+      
+      // লোকাল প্লেয়ারের জন্য নাম ট্যাগ
+      if (isLocal && playerName) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 256;
+        canvas.height = 64;
+        context.fillStyle = 'rgba(0,0,0,0.6)';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.font = 'Bold 20px Arial';
+        context.fillStyle = 'white';
+        context.textAlign = 'center';
+        context.fillText(playerName, canvas.width/2, canvas.height/2);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        const material = new THREE.SpriteMaterial({ map: texture });
+        const sprite = new THREE.Sprite(material);
+        sprite.scale.set(1.5, 0.4, 1);
+        sprite.position.y = 1.9;
+        group.add(sprite);
+      }
       
       return group;
     }
     
-    localPlayerMesh = createPlayerMesh(0xff6b6b, true);
+    // এলোমেলো রঙ জেনারেটর
+    function getRandomColor() {
+      const colors = [0xff6b6b, 0x4ecdc4, 0x45b7d1, 0x96ceb4, 0xffeead, 0xffcc5c, 0xff6f69, 0x88d8b0];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+    
+    localPlayerMesh = createCartoonPlayer(0xff6b6b, true, "You");
     scene.add(localPlayerMesh);
     
     function updateCamera() {
@@ -462,6 +620,9 @@
     const readyBtn = document.getElementById('readyBtn');
     const leaveBtn = document.getElementById('leaveBtn');
     const gameStatusDiv = document.getElementById('gameStatus');
+    const joinModal = document.getElementById('joinModal');
+    const roomCodeInput = document.getElementById('roomCode');
+    const playerNameInput = document.getElementById('playerName');
     
     // গাইডলাইন মোডাল
     const modal = document.getElementById('howToPlayModal');
@@ -544,7 +705,6 @@
           currentRoom = data.roomCode;
           roomCodeDisplay.textContent = data.roomCode;
           updatePlayersList(data.players);
-          lobbyPanel.classList.add('hidden');
           gamePanel.classList.remove('hidden');
           statusDiv.textContent = `🎯 Room created: ${data.roomCode}`;
           gameStatusDiv.textContent = 'Share code with friends! Click READY.';
@@ -555,7 +715,6 @@
           currentRoom = data.roomCode;
           roomCodeDisplay.textContent = data.roomCode;
           updatePlayersList(data.players);
-          lobbyPanel.classList.add('hidden');
           gamePanel.classList.remove('hidden');
           statusDiv.textContent = `🎯 Joined room ${data.roomCode}`;
           gameStatusDiv.textContent = 'Click READY when ready!';
@@ -587,7 +746,8 @@
           if (data.playerId !== playerId && data.position) {
             let otherMesh = otherPlayers.get(data.playerId);
             if (!otherMesh) {
-              otherMesh = createPlayerMesh(0x4ecdc4, false);
+              const randomColor = getRandomColor();
+              otherMesh = createCartoonPlayer(randomColor, false, data.playerName || "Enemy");
               scene.add(otherMesh);
               otherPlayers.set(data.playerId, otherMesh);
               console.log('➕ Added other player:', data.playerId);
@@ -614,7 +774,7 @@
       if (!players) return;
       playerCountSpan.textContent = players.length;
       playersListDiv.innerHTML = players.map(p => 
-        `<div class="player-item">${p.name} ${p.isHost ? '👑' : ''} ${p.ready ? '✅' : '⏳'}</div>`
+        `<div class="player-item">🎮 ${p.name} ${p.isHost ? '👑' : ''} ${p.ready ? '✅' : '⏳'}</div>`
       ).join('');
     }
     
@@ -644,17 +804,17 @@
     };
     
     document.getElementById('joinRoomBtn').onclick = () => {
-      document.getElementById('joinInput').classList.toggle('hidden');
+      joinModal.classList.remove('hidden');
+      roomCodeInput.value = '';
+      playerNameInput.value = '';
     };
     
     document.getElementById('confirmJoin').onclick = () => {
-      const code = document.getElementById('roomCode').value.trim().toUpperCase();
-      const name = document.getElementById('playerName').value.trim() || `Warrior_${Math.floor(Math.random()*1000)}`;
+      const code = roomCodeInput.value.trim().toUpperCase();
+      const name = playerNameInput.value.trim() || `Warrior_${Math.floor(Math.random()*1000)}`;
       if (code && ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'join_room', roomCode: code, playerName: name }));
-        document.getElementById('joinInput').classList.add('hidden');
-        document.getElementById('roomCode').value = '';
-        document.getElementById('playerName').value = '';
+        joinModal.classList.add('hidden');
         statusDiv.textContent = `🔍 Joining room ${code}...`;
         console.log('Join Room:', code, name);
       } else if (!code) {
@@ -665,9 +825,7 @@
     };
     
     document.getElementById('cancelJoin').onclick = () => {
-      document.getElementById('joinInput').classList.add('hidden');
-      document.getElementById('roomCode').value = '';
-      document.getElementById('playerName').value = '';
+      joinModal.classList.add('hidden');
     };
     
     readyBtn.onclick = () => {
@@ -684,7 +842,6 @@
     leaveBtn.onclick = () => {
       if (ws && currentRoom && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'leave_room' }));
-        lobbyPanel.classList.remove('hidden');
         gamePanel.classList.add('hidden');
         currentRoom = null;
         gameStarted = false;
@@ -711,26 +868,50 @@
     }
     animate();
     
-    // গাছ যোগ করা
-    for (let i = 0; i < 35; i++) {
+    // রঙিন ফুল এবং গাছ যোগ করা
+    for (let i = 0; i < 30; i++) {
       const treeGroup = new THREE.Group();
-      const trunkGeo = new THREE.CylinderGeometry(0.4, 0.5, 1.2);
+      const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.0, 6);
       const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8B5A2B });
       const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-      trunk.position.y = 0.6;
+      trunk.position.y = 0.4;
       treeGroup.add(trunk);
       
-      const foliageGeo = new THREE.ConeGeometry(0.7, 1, 8);
-      const foliageMat = new THREE.MeshStandardMaterial({ color: 0x3a7d34 });
+      const foliageGeo = new THREE.ConeGeometry(0.5, 0.8, 6);
+      const foliageMat = new THREE.MeshStandardMaterial({ color: 0x4caf50 });
       const foliage = new THREE.Mesh(foliageGeo, foliageMat);
-      foliage.position.y = 1.2;
+      foliage.position.y = 0.9;
       treeGroup.add(foliage);
       
       const angle = Math.random() * Math.PI * 2;
-      const radius = 15 + Math.random() * 20;
+      const radius = 14 + Math.random() * 22;
       treeGroup.position.x = Math.cos(angle) * radius;
       treeGroup.position.z = Math.sin(angle) * radius;
       scene.add(treeGroup);
+    }
+    
+    // রঙিন ফুল
+    for (let i = 0; i < 100; i++) {
+      const flowerGroup = new THREE.Group();
+      const stemGeo = new THREE.CylinderGeometry(0.03, 0.05, 0.3, 4);
+      const stemMat = new THREE.MeshStandardMaterial({ color: 0x4caf50 });
+      const stem = new THREE.Mesh(stemGeo, stemMat);
+      stem.position.y = 0.15;
+      flowerGroup.add(stem);
+      
+      const flowerColors = [0xff6b6b, 0xffcc5c, 0xff6f69, 0x88d8b0, 0x4ecdc4];
+      const petalGeo = new THREE.SphereGeometry(0.08, 8, 8);
+      const petalMat = new THREE.MeshStandardMaterial({ color: flowerColors[Math.floor(Math.random() * flowerColors.length)] });
+      const flowerHead = new THREE.Mesh(petalGeo, petalMat);
+      flowerHead.position.y = 0.3;
+      flowerGroup.add(flowerHead);
+      
+      const x = (Math.random() - 0.5) * 45;
+      const z = (Math.random() - 0.5) * 45;
+      if (Math.abs(x) < 22 && Math.abs(z) < 22) {
+        flowerGroup.position.set(x, -0.8, z);
+        scene.add(flowerGroup);
+      }
     }
     
     window.addEventListener('resize', () => {
