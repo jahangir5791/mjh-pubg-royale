@@ -3,184 +3,364 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>MJH PUBG Royale - 3D Battle Royale</title>
+  <title>MJH PUBG Royale - Real 3D Multiplayer Battle Royale</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; font-family: 'Arial', sans-serif; }
     
-    /* বাটন বার - নিচের দিকে সেন্টার করা */
-    .button-bar {
+    /* UI ওভারলে - বাটন নিচে রাখার জন্য */
+    #ui {
       position: fixed;
-      bottom: 25px;
-      left: 50%;
-      transform: translateX(-50%);
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 20px;
+    }
+    
+    /* বাটন কন্টেইনার - নিচের দিকে এক লাইনে */
+    .button-bar {
       background: rgba(0,0,0,0.85);
       backdrop-filter: blur(10px);
       border-radius: 50px;
       padding: 12px 20px;
-      display: flex;
-      gap: 15px;
-      z-index: 200;
+      pointer-events: auto;
       border: 1px solid rgba(0,255,255,0.3);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      max-width: 90%;
+      margin: 0 auto;
       box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
     
-    .button-bar button {
-      background: linear-gradient(45deg, #ff6b6b, #feca57);
-      border: none;
-      padding: 10px 20px;
-      border-radius: 40px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 14px;
-      transition: transform 0.2s;
-    }
-    
-    .button-bar button:hover { transform: scale(1.05); }
-    
-    #howToPlayBtn {
-      background: linear-gradient(45deg, #4ecdc4, #44a08d) !important;
-    }
-    
-    /* জয়েন মডাল */
-    .join-modal {
+    /* জয়েন রুমের মডাল - মাঝখানে সুন্দর করে */
+    .modal-panel {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       background: rgba(0,0,0,0.95);
-      border-radius: 20px;
+      backdrop-filter: blur(15px);
+      border-radius: 25px;
       padding: 25px;
+      pointer-events: auto;
+      border: 2px solid rgba(255,107,107,0.5);
+      max-width: 320px;
+      width: 85%;
+      z-index: 200;
       text-align: center;
-      z-index: 300;
-      border: 2px solid #ff6b6b;
-      min-width: 280px;
-      display: none;
+      box-shadow: 0 0 30px rgba(255,107,107,0.3);
     }
     
-    .join-modal input {
-      width: 100%;
-      padding: 10px;
+    .modal-panel h1 {
+      color: #ff6b6b;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    
+    .modal-panel input {
+      padding: 12px 15px;
       margin: 8px 0;
-      border-radius: 10px;
+      border-radius: 12px;
       border: none;
-      background: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.15);
       color: white;
+      width: 100%;
+      font-size: 14px;
     }
     
-    .join-modal button {
-      padding: 8px 20px;
-      margin: 5px;
-      border-radius: 20px;
+    .modal-panel input::placeholder {
+      color: rgba(255,255,255,0.6);
+    }
+    
+    .modal-panel button {
+      background: linear-gradient(45deg, #ff6b6b, #feca57);
       border: none;
+      padding: 12px 20px;
+      margin: 8px 5px;
+      border-radius: 50px;
+      color: white;
+      font-weight: bold;
       cursor: pointer;
+      transition: transform 0.2s;
+      width: calc(50% - 10px);
     }
     
-    #confirmJoin { background: #ff6b6b; color: white; }
-    #cancelJoin { background: #555; color: white; }
+    .modal-panel button:hover {
+      transform: scale(1.02);
+    }
     
-    /* গেম প্যানেল (রুম ইনফো) */
-    .game-panel {
+    #cancelJoin {
+      background: linear-gradient(45deg, #555, #333);
+    }
+    
+    /* গেম প্যানেল (রুমের ভিতরে) - ডান পাশে */
+    #gamePanel {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.85);
+      bottom: 90px;
+      right: 15px;
+      left: auto;
+      top: auto;
+      transform: none;
+      background: rgba(0,0,0,0.9);
       backdrop-filter: blur(10px);
       border-radius: 15px;
       padding: 12px;
-      z-index: 200;
-      min-width: 180px;
-      font-size: 12px;
-      color: white;
-      display: none;
+      border: 1px solid rgba(0,255,255,0.3);
+      max-width: 220px;
+      pointer-events: auto;
+      z-index: 150;
     }
     
-    .game-panel .room-code {
+    #gamePanel .players-list {
+      max-height: 100px;
+      font-size: 10px;
+      overflow-y: auto;
+    }
+    
+    #gamePanel button {
+      padding: 6px 10px;
+      font-size: 11px;
+      margin: 3px;
+    }
+    
+    #gamePanel .room-code {
+      font-size: 10px;
+      padding: 2px 6px;
+    }
+    
+    h1 {
+      color: #ff6b6b;
+      font-size: 20px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    
+    .button-bar button {
+      background: linear-gradient(45deg, #ff6b6b, #feca57);
+      border: none;
+      padding: 10px 18px;
+      border-radius: 40px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+      font-size: 13px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .button-bar button:hover { transform: scale(1.05); }
+    .button-bar button:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
+    
+    /* গাইডলাইন বাটন আলাদা স্টাইল */
+    #howToPlayBtn {
+      background: linear-gradient(45deg, #4ecdc4, #44a08d) !important;
+    }
+    
+    #status {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.7);
+      padding: 8px 12px;
+      border-radius: 10px;
+      text-align: center;
+      font-family: monospace;
+      z-index: 100;
+      font-size: 11px;
+      pointer-events: none;
+    }
+    
+    .room-code {
       background: #ff6b6b;
       padding: 3px 8px;
       border-radius: 8px;
       font-weight: bold;
+      display: inline-block;
+      margin: 3px;
+      font-size: 11px;
     }
     
     .players-list {
       margin-top: 8px;
-      max-height: 100px;
+      font-size: 11px;
+      max-height: 120px;
       overflow-y: auto;
     }
     
     .player-item {
-      padding: 3px;
+      padding: 2px 5px;
       margin: 2px;
       background: rgba(255,255,255,0.1);
       border-radius: 5px;
     }
     
-    #status {
-      position: fixed;
-      bottom: 100px;
-      left: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.7);
-      padding: 8px;
-      border-radius: 10px;
-      text-align: center;
+    .hidden { display: none; }
+    
+    #gameStatus {
+      margin-top: 8px;
       font-size: 11px;
-      z-index: 100;
+      font-weight: bold;
+      color: #ffaa00;
     }
     
-    .hidden { display: none !important; }
     .connected { color: #0f0; }
-    .connecting { color: #ff0; }
     .disconnected { color: #f00; }
+    .connecting { color: #ff0; }
     
+    /* মোবাইলের জন্য */
     @media (max-width: 600px) {
       .button-bar { padding: 8px 12px; gap: 8px; }
-      .button-bar button { padding: 6px 12px; font-size: 11px; }
-      .game-panel { top: 10px; right: 10px; min-width: 150px; }
+      .button-bar button { padding: 8px 14px; font-size: 11px; }
+      #gamePanel { max-width: 200px; padding: 8px; bottom: 80px; right: 8px; }
+      .modal-panel { padding: 20px; width: 90%; }
+      .modal-panel h1 { font-size: 20px; }
+    }
+    
+    /* গাইডলাইন মোডাল */
+    .guide-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.95);
+      z-index: 300;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .guide-modal-content {
+      background: rgba(10,20,30,0.98);
+      backdrop-filter: blur(10px);
+      border-radius: 25px;
+      padding: 25px;
+      max-width: 350px;
+      max-height: 85%;
+      overflow-y: auto;
+      border: 1px solid #ff6b6b;
+      color: white;
+      font-size: 14px;
+    }
+    
+    .guide-modal-content h2 {
+      color: #ff6b6b;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .guide-modal-content h3 {
+      color: #4ecdc4;
+      margin: 15px 0 8px 0;
+    }
+    
+    .guide-modal-content p {
+      margin: 5px 0;
+      line-height: 1.4;
+    }
+    
+    .guide-modal-content ul {
+      margin: 5px 0 5px 20px;
+    }
+    
+    .close-modal {
+      background: linear-gradient(45deg, #ff6b6b, #feca57);
+      border: none;
+      padding: 12px 20px;
+      border-radius: 30px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      width: 100%;
+    }
+    
+    .controls-info {
+      background: rgba(0,0,0,0.5);
+      border-radius: 12px;
+      padding: 10px;
+      margin: 10px 0;
     }
   </style>
 </head>
 <body>
-  <!-- বাটন বার -->
-  <div class="button-bar">
-    <button id="quickPlayBtn">🎮 Quick Play</button>
-    <button id="createRoomBtn">🏠 Create Room</button>
-    <button id="joinRoomBtn">👥 Join Room</button>
-    <button id="howToPlayBtn">📖 How to Play</button>
+  <div id="ui">
+    <!-- নিচের বাটন বার - এক লাইনে সব বাটন -->
+    <div class="button-bar">
+      <button id="quickPlayBtn">🎮 Quick Play</button>
+      <button id="createRoomBtn">🏠 Create Room</button>
+      <button id="joinRoomBtn">👥 Join Room</button>
+      <button id="howToPlayBtn">📖 How to Play</button>
+    </div>
+    
+    <!-- জয়েন রুমের মডাল (মাঝখানে) -->
+    <div id="joinModal" class="modal-panel hidden">
+      <h1>🔗 Join Room</h1>
+      <input type="text" id="roomCode" placeholder="Room Code (MJHXXXX)" autocomplete="off">
+      <input type="text" id="playerName" placeholder="Your Name" autocomplete="off">
+      <div>
+        <button id="confirmJoin">Join</button>
+        <button id="cancelJoin">Cancel</button>
+      </div>
+    </div>
+    
+    <!-- গেম প্যানেল (রুমের ভিতরে - ডান পাশে) -->
+    <div class="panel hidden" id="gamePanel">
+      <div>🏠 Room: <span id="roomCodeDisplay" class="room-code"></span></div>
+      <div>👥 Players: <span id="playerCount"></span>/10</div>
+      <div class="players-list" id="playersList"></div>
+      <button id="readyBtn">✅ Ready</button>
+      <button id="leaveBtn">🚪 Leave</button>
+      <div id="gameStatus"></div>
+    </div>
   </div>
-  
-  <!-- জয়েন মডাল -->
-  <div id="joinModal" class="join-modal">
-    <h3 style="color:#ff6b6b; margin-bottom:15px;">🔗 Join Room</h3>
-    <input type="text" id="roomCode" placeholder="Room Code (MJHXXXX)">
-    <input type="text" id="playerName" placeholder="Your Name">
-    <button id="confirmJoin">Join</button>
-    <button id="cancelJoin">Cancel</button>
-  </div>
-  
-  <!-- গেম প্যানেল -->
-  <div id="gamePanel" class="game-panel">
-    <div>🏠 Room: <span id="roomCodeDisplay" class="room-code"></span></div>
-    <div>👥 Players: <span id="playerCount"></span>/10</div>
-    <div class="players-list" id="playersList"></div>
-    <button id="readyBtn" style="background:#4ecdc4; margin-top:8px; padding:4px 10px;">✅ Ready</button>
-    <button id="leaveBtn" style="background:#ff6b6b; margin-top:4px; padding:4px 10px;">🚪 Leave</button>
-    <div id="gameStatus" style="margin-top:6px; font-size:10px; color:#ffaa00;"></div>
-  </div>
-  
-  <div id="status">🔌 Connecting to server...</div>
-  
-  <!-- How to Play মডাল -->
-  <div id="howToPlayModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:400; justify-content:center; align-items:center;">
-    <div style="background:#1a1a2e; border-radius:20px; padding:25px; max-width:320px; color:white;">
-      <h2 style="color:#ff6b6b;">🎮 How to Play</h2>
-      <p><strong>Quick Play:</strong> একা খেলা শুরু</p>
-      <p><strong>Create Room:</strong> রুম তৈরি করুন</p>
-      <p><strong>Join Room:</strong> রুম কোড দিয়ে যোগ দিন</p>
-      <p><strong>Controls:</strong> WASD বা Arrow Keys</p>
-      <p><strong>Goal:</strong> শেষ পর্যন্ত বেঁচে থাকুন!</p>
-      <button id="closeModalBtn" style="background:#ff6b6b; padding:10px 20px; border:none; border-radius:25px; margin-top:15px; width:100%; color:white;">Got it 🔥</button>
+  <div id="status">🔌 Connecting to Render server...</div>
+
+  <!-- গাইডলাইন মোডাল -->
+  <div id="howToPlayModal" class="guide-modal">
+    <div class="guide-modal-content">
+      <h2>🎯 MJH PUBG Royale - How to Play</h2>
+      
+      <h3>🎮 Game Modes</h3>
+      <p>• <strong>Quick Play:</strong> একা খেলুন - সার্ভার নিজে নিজে ম্যাচ তৈরি করবে</p>
+      <p>• <strong>Create Room:</strong> রুম তৈরি করুন - বন্ধুদের কোড দিন</p>
+      <p>• <strong>Join Room:</strong> অন্যের রুমে যোগ দিন - রুম কোড দিয়ে</p>
+      
+      <h3>⌨️ Controls (কীবোর্ড নিয়ন্ত্রণ)</h3>
+      <div class="controls-info">
+        <p>🔼 <strong>W / ↑</strong> - সামনে যান</p>
+        <p>🔽 <strong>S / ↓</strong> - পিছনে যান</p>
+        <p>◀️ <strong>A / ←</strong> - বামে যান</p>
+        <p>▶️ <strong>D / →</strong> - ডানে যান</p>
+      </div>
+      
+      <h3>🏆 How to Win</h3>
+      <p>• শেষ পর্যন্ত বেঁচে থাকুন! সর্বশেষ বেঁচে থাকা প্লেয়ার বিজয়ী</p>
+      <p>• ম্যাপে ঘুরে বেড়ান, পজিশন নিন</p>
+      <p>• মাল্টিপ্লেয়ার মোডে বন্ধুদের সাথে প্রতিযোগিতা করুন</p>
+      
+      <h3>🛠️ Game Rules</h3>
+      <p>• ১-১০ জন পর্যন্ত খেলতে পারবেন</p>
+      <p>• সব প্লেয়ার "Ready" চাপলে গেম শুরু হবে</p>
+      <p>• সিঙ্গেল প্লেয়ার: শুধু আপনি রেডি চাপলেই গেম শুরু</p>
+      <p>• রুম কোড শেয়ার করে বন্ধুদের আমন্ত্রণ জানান</p>
+      
+      <h3>🎯 Tips</h3>
+      <p>• প্রথমবার খেললে Quick Play ব্যবহার করুন</p>
+      <p>• গেম শুরু হলে WASD/Arrow keys দিয়ে মুভ করুন</p>
+      <p>• 3D ক্যামেরা আপনার ক্যারেক্টার ফলো করে</p>
+      
+      <button class="close-modal" id="closeModalBtn">Got it! 🔥</button>
     </div>
   </div>
 
@@ -200,204 +380,243 @@
     let currentRoom = null;
     let isReady = false;
     let gameStarted = false;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
     
-    // ============= 3D সেটআপ =============
+    // 3D সেটআপ
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x87CEEB); // আকাশী নীল
-    scene.fog = new THREE.FogExp2(0x87CEEB, 0.01);
+    scene.fog = new THREE.FogExp2(0x87CEEB, 0.008);
     
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 6, 12);
+    camera.position.set(0, 5, 10);
+    camera.lookAt(0, 0, 0);
     
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
     
-    // গ্রাউন্ড
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(60, 60),
-      new THREE.MeshStandardMaterial({ color: 0x5c9e3e, roughness: 0.8 })
-    );
+    // গ্রাউন্ড (ঘাস)
+    const groundGeometry = new THREE.PlaneGeometry(60, 60);
+    const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x5c9e3e, roughness: 0.8, metalness: 0.1 });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -1;
     ground.receiveShadow = true;
     scene.add(ground);
     
-    // গ্রিড
-    const grid = new THREE.GridHelper(60, 20, 0x4ecdc4, 0x2c5f2d);
-    grid.position.y = -0.9;
-    scene.add(grid);
+    // গ্রিড হেল্পার
+    const gridHelper = new THREE.GridHelper(60, 20, 0x4ecdc4, 0x2c5f2d);
+    gridHelper.position.y = -0.9;
+    scene.add(gridHelper);
     
-    // লাইট
+    // লাইটিং
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-    dirLight.position.set(10, 20, 5);
-    dirLight.castShadow = true;
-    scene.add(dirLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(10, 20, 5);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
+    const backLight = new THREE.PointLight(0x4466ff, 0.5);
+    backLight.position.set(0, 5, -5);
+    scene.add(backLight);
     
-    // কার্টুন প্লেয়ার তৈরি
-    function createPlayer(color = 0xff6b6b, isLocal = false) {
+    // কার্টুন প্লেয়ার ক্রিয়েট ফাংশন (চোখ, মুখ, ক্যাপ সহ)
+    function createCartoonPlayer(color = 0xff6b6b, isLocal = false, playerName = "") {
       const group = new THREE.Group();
       
-      // শরীর
-      const body = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5, 0.4, 1.0, 8),
-        new THREE.MeshStandardMaterial({ color: color, roughness: 0.3 })
-      );
+      // শরীর (গোলাকার টপ সহ)
+      const bodyGeo = new THREE.CylinderGeometry(0.6, 0.5, 1.2, 8);
+      const bodyMat = new THREE.MeshStandardMaterial({ color: color, emissive: isLocal ? 0x442200 : 0x000000, roughness: 0.3 });
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
       body.position.y = 0.5;
       body.castShadow = true;
       group.add(body);
       
-      // মাথা
-      const head = new THREE.Mesh(
-        new THREE.SphereGeometry(0.45, 32, 32),
-        new THREE.MeshStandardMaterial({ color: 0xffdd99 })
-      );
-      head.position.y = 1.05;
+      // মাথা (বড় গোল)
+      const headGeo = new THREE.SphereGeometry(0.55, 32, 32);
+      const headMat = new THREE.MeshStandardMaterial({ color: 0xffdd99, roughness: 0.2 });
+      const head = new THREE.Mesh(headGeo, headMat);
+      head.position.y = 1.1;
       head.castShadow = true;
       group.add(head);
       
-      // চোখ
-      const eyeWhite = new THREE.Mesh(
-        new THREE.SphereGeometry(0.1, 16, 16),
-        new THREE.MeshStandardMaterial({ color: 0xffffff })
-      );
-      const leftEye = eyeWhite.clone();
-      leftEye.position.set(-0.18, 1.18, 0.45);
-      group.add(leftEye);
-      const rightEye = eyeWhite.clone();
-      rightEye.position.set(0.18, 1.18, 0.45);
-      group.add(rightEye);
+      // চোখ (সাদা অংশ)
+      const eyeWhiteGeo = new THREE.SphereGeometry(0.12, 24, 24);
+      const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
       
-      // পিউপিল
-      const pupil = new THREE.Mesh(
-        new THREE.SphereGeometry(0.06, 16, 16),
-        new THREE.MeshStandardMaterial({ color: 0x000000 })
-      );
-      const leftPupil = pupil.clone();
-      leftPupil.position.set(-0.18, 1.17, 0.55);
+      const leftEyeWhite = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
+      leftEyeWhite.position.set(-0.2, 1.25, 0.55);
+      group.add(leftEyeWhite);
+      
+      const rightEyeWhite = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
+      rightEyeWhite.position.set(0.2, 1.25, 0.55);
+      group.add(rightEyeWhite);
+      
+      // পিউপিল (কালো অংশ)
+      const pupilGeo = new THREE.SphereGeometry(0.07, 24, 24);
+      const pupilMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+      
+      const leftPupil = new THREE.Mesh(pupilGeo, pupilMat);
+      leftPupil.position.set(-0.2, 1.24, 0.67);
       group.add(leftPupil);
-      const rightPupil = pupil.clone();
-      rightPupil.position.set(0.18, 1.17, 0.55);
+      
+      const rightPupil = new THREE.Mesh(pupilGeo, pupilMat);
+      rightPupil.position.set(0.2, 1.24, 0.67);
       group.add(rightPupil);
       
-      // ক্যাপ
-      const cap = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5, 0.55, 0.15, 8),
-        new THREE.MeshStandardMaterial({ color: color })
-      );
-      cap.position.y = 1.38;
+      // চোখের উজ্জ্বলতা (হাইলাইট)
+      const highlightGeo = new THREE.SphereGeometry(0.03, 16, 16);
+      const highlightMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+      
+      const leftHighlight = new THREE.Mesh(highlightGeo, highlightMat);
+      leftHighlight.position.set(-0.23, 1.27, 0.72);
+      group.add(leftHighlight);
+      
+      const rightHighlight = new THREE.Mesh(highlightGeo, highlightMat);
+      rightHighlight.position.set(0.17, 1.27, 0.72);
+      group.add(rightHighlight);
+      
+      // মুখ (হাসি)
+      const mouthGeo = new THREE.TorusGeometry(0.15, 0.03, 16, 32, Math.PI);
+      const mouthMat = new THREE.MeshStandardMaterial({ color: 0x884444 });
+      const mouth = new THREE.Mesh(mouthGeo, mouthMat);
+      mouth.rotation.x = 0.2;
+      mouth.rotation.z = 0.1;
+      mouth.position.set(0, 1.05, 0.58);
+      group.add(mouth);
+      
+      // ক্যাপ/হেলমেট
+      const capGeo = new THREE.CylinderGeometry(0.6, 0.65, 0.2, 8);
+      const capMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.5 });
+      const cap = new THREE.Mesh(capGeo, capMat);
+      cap.position.y = 1.45;
+      cap.castShadow = true;
       group.add(cap);
+      
+      // ক্যাপের উপরের বাটন
+      const buttonGeo = new THREE.SphereGeometry(0.08, 8, 8);
+      const buttonMat = new THREE.MeshStandardMaterial({ color: 0xffaa44 });
+      const button = new THREE.Mesh(buttonGeo, buttonMat);
+      button.position.y = 1.55;
+      group.add(button);
+      
+      // হাত (ছোট সিলিন্ডার)
+      const armGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.5, 4);
+      const armMat = new THREE.MeshStandardMaterial({ color: color });
+      
+      const leftArm = new THREE.Mesh(armGeo, armMat);
+      leftArm.position.set(-0.5, 1.0, 0);
+      leftArm.rotation.z = 0.3;
+      group.add(leftArm);
+      
+      const rightArm = new THREE.Mesh(armGeo, armMat);
+      rightArm.position.set(0.5, 1.0, 0);
+      rightArm.rotation.z = -0.3;
+      group.add(rightArm);
+      
+      // পা
+      const legGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.5, 4);
+      const legMat = new THREE.MeshStandardMaterial({ color: color });
+      
+      const leftLeg = new THREE.Mesh(legGeo, legMat);
+      leftLeg.position.set(-0.25, 0.2, 0);
+      group.add(leftLeg);
+      
+      const rightLeg = new THREE.Mesh(legGeo, legMat);
+      rightLeg.position.set(0.25, 0.2, 0);
+      group.add(rightLeg);
+      
+      // লোকাল প্লেয়ারের জন্য নাম ট্যাগ
+      if (isLocal && playerName) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 256;
+        canvas.height = 64;
+        context.fillStyle = 'rgba(0,0,0,0.6)';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.font = 'Bold 20px Arial';
+        context.fillStyle = 'white';
+        context.textAlign = 'center';
+        context.fillText(playerName, canvas.width/2, canvas.height/2);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        const material = new THREE.SpriteMaterial({ map: texture });
+        const sprite = new THREE.Sprite(material);
+        sprite.scale.set(1.5, 0.4, 1);
+        sprite.position.y = 1.9;
+        group.add(sprite);
+      }
       
       return group;
     }
     
-    let localPlayer = createPlayer(0xff6b6b, true);
-    scene.add(localPlayer);
-    localPlayer.position.set(0, -0.5, 0);
+    // এলোমেলো রঙ জেনারেটর
+    function getRandomColor() {
+      const colors = [0xff6b6b, 0x4ecdc4, 0x45b7d1, 0x96ceb4, 0xffeead, 0xffcc5c, 0xff6f69, 0x88d8b0];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+    
+    let localPlayerMesh = createCartoonPlayer(0xff6b6b, true, "You");
+    scene.add(localPlayerMesh);
+    localPlayerMesh.position.set(0, -0.8, 0);
     
     const otherPlayers = new Map();
     
-    // গাছ
-    for (let i = 0; i < 40; i++) {
-      const tree = new THREE.Group();
-      const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.3, 0.4, 0.8, 6),
-        new THREE.MeshStandardMaterial({ color: 0x8B5A2B })
-      );
-      trunk.position.y = 0.4;
-      tree.add(trunk);
-      const foliage = new THREE.Mesh(
-        new THREE.ConeGeometry(0.5, 0.7, 6),
-        new THREE.MeshStandardMaterial({ color: 0x4caf50 })
-      );
-      foliage.position.y = 0.85;
-      tree.add(foliage);
-      
-      const angle = Math.random() * Math.PI * 2;
-      const radius = 15 + Math.random() * 25;
-      tree.position.x = Math.cos(angle) * radius;
-      tree.position.z = Math.sin(angle) * radius;
-      scene.add(tree);
-    }
-    
-    // ফুল
-    for (let i = 0; i < 150; i++) {
-      const flower = new THREE.Group();
-      const stem = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.03, 0.05, 0.25, 4),
-        new THREE.MeshStandardMaterial({ color: 0x4caf50 })
-      );
-      stem.position.y = 0.12;
-      flower.add(stem);
-      const head = new THREE.Mesh(
-        new THREE.SphereGeometry(0.08, 8, 8),
-        new THREE.MeshStandardMaterial({ color: [0xff6b6b, 0xffcc5c, 0xff6f69, 0x88d8b0][Math.floor(Math.random() * 4)] })
-      );
-      head.position.y = 0.25;
-      flower.add(head);
-      
-      const x = (Math.random() - 0.5) * 50;
-      const z = (Math.random() - 0.5) * 50;
-      if (Math.abs(x) < 24 && Math.abs(z) < 24) {
-        flower.position.set(x, -0.85, z);
-        scene.add(flower);
-      }
-    }
-    
-    // ক্যামেরা ফলো
     function updateCamera() {
-      if (gameStarted && localPlayer) {
-        const targetPos = localPlayer.position.clone();
+      if (localPlayerMesh && gameStarted) {
+        const targetPos = localPlayerMesh.position.clone();
         camera.position.lerp(targetPos.clone().add(new THREE.Vector3(0, 3, 8)), 0.1);
         camera.lookAt(targetPos);
       }
     }
     
-    // মুভমেন্ট
-    const keys = {};
+    // কীবোর্ড কন্ট্রোল
+    const keyState = {};
     window.addEventListener('keydown', (e) => {
-      keys[e.key.toLowerCase()] = true;
+      keyState[e.key.toLowerCase()] = true;
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         e.preventDefault();
       }
     });
-    window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+    window.addEventListener('keyup', (e) => { keyState[e.key.toLowerCase()] = false; });
     
-    let lastPos = { x: 0, z: 0 };
+    let lastSentPosition = { x: 0, z: 0 };
     function handleMovement() {
-      if (!gameStarted || !localPlayer) return;
+      if (!gameStarted || !localPlayerMesh) return;
       
-      let dx = 0, dz = 0;
-      if (keys['w'] || keys['arrowup']) dz -= 0.2;
-      if (keys['s'] || keys['arrowdown']) dz += 0.2;
-      if (keys['a'] || keys['arrowleft']) dx -= 0.2;
-      if (keys['d'] || keys['arrowright']) dx += 0.2;
+      let moveX = 0, moveZ = 0;
+      if (keyState['w'] || keyState['arrowup']) moveZ -= 0.15;
+      if (keyState['s'] || keyState['arrowdown']) moveZ += 0.15;
+      if (keyState['a'] || keyState['arrowleft']) moveX -= 0.15;
+      if (keyState['d'] || keyState['arrowright']) moveX += 0.15;
       
-      if (dx !== 0 || dz !== 0) {
-        localPlayer.position.x += dx;
-        localPlayer.position.z += dz;
-        localPlayer.position.x = Math.max(-25, Math.min(25, localPlayer.position.x));
-        localPlayer.position.z = Math.max(-25, Math.min(25, localPlayer.position.z));
+      if (moveX !== 0 || moveZ !== 0) {
+        const newPos = localPlayerMesh.position.clone();
+        newPos.x += moveX;
+        newPos.z += moveZ;
+        newPos.x = Math.max(-28, Math.min(28, newPos.x));
+        newPos.z = Math.max(-28, Math.min(28, newPos.z));
+        localPlayerMesh.position.copy(newPos);
         
-        const angle = Math.atan2(dx, dz);
-        localPlayer.rotation.y = angle;
+        const angle = Math.atan2(moveX, moveZ);
+        localPlayerMesh.rotation.y = angle;
         
         if (ws && ws.readyState === WebSocket.OPEN) {
-          const pos = { x: localPlayer.position.x, y: 0, z: localPlayer.position.z };
-          if (Math.hypot(pos.x - lastPos.x, pos.z - lastPos.z) > 0.3) {
+          const pos = { x: localPlayerMesh.position.x, y: 0, z: localPlayerMesh.position.z };
+          if (Math.hypot(pos.x - lastSentPosition.x, pos.z - lastSentPosition.z) > 0.5) {
             ws.send(JSON.stringify({ type: 'update_position', position: pos }));
-            lastPos = { x: pos.x, z: pos.z };
+            lastSentPosition = { x: pos.x, z: pos.z };
           }
         }
       }
     }
     
     // UI এলিমেন্ট
-    const statusDiv = document.getElementById('status');
+    const lobbyPanel = document.getElementById('lobbyPanel');
     const gamePanel = document.getElementById('gamePanel');
+    const statusDiv = document.getElementById('status');
     const roomCodeDisplay = document.getElementById('roomCodeDisplay');
     const playersListDiv = document.getElementById('playersList');
     const playerCountSpan = document.getElementById('playerCount');
@@ -405,147 +624,245 @@
     const leaveBtn = document.getElementById('leaveBtn');
     const gameStatusDiv = document.getElementById('gameStatus');
     const joinModal = document.getElementById('joinModal');
+    const roomCodeInput = document.getElementById('roomCode');
+    const playerNameInput = document.getElementById('playerName');
+    
+    // গাইডলাইন মোডাল
+    const modal = document.getElementById('howToPlayModal');
+    const howToPlayBtn = document.getElementById('howToPlayBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    
+    howToPlayBtn.onclick = () => {
+      modal.style.display = 'flex';
+    };
+    
+    closeModalBtn.onclick = () => {
+      modal.style.display = 'none';
+    };
+    
+    window.onclick = (event) => {
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    };
     
     // WebSocket সংযোগ
     function connectWebSocket() {
       const wsUrl = 'wss://mjh-pubg-server.onrender.com';
+      
+      console.log('🔌 Connecting to Render WebSocket:', wsUrl);
       statusDiv.textContent = '🔌 Connecting to Render server...';
       statusDiv.className = 'connecting';
       
       ws = new WebSocket(wsUrl);
       
       ws.onopen = () => {
-        statusDiv.textContent = '✅ Connected! Ready to battle!';
+        console.log('✅ Connected to Render WebSocket server!');
+        statusDiv.textContent = '✅ Connected to Render server! Ready to battle!';
         statusDiv.className = 'connected';
+        reconnectAttempts = 0;
       };
       
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          handleMessage(data);
-        } catch(e) { console.error(e); }
+          console.log('📨 Message from server:', data.type);
+          handleServerMessage(data);
+        } catch (err) {
+          console.error('Parse error:', err);
+        }
       };
       
-      ws.onerror = () => {
-        statusDiv.textContent = '❌ Connection error!';
+      ws.onerror = (error) => {
+        console.error('❌ WebSocket error:', error);
+        statusDiv.textContent = '❌ Connection error! Trying to reconnect...';
         statusDiv.className = 'disconnected';
       };
       
       ws.onclose = () => {
-        statusDiv.textContent = '🔌 Disconnected. Refresh to reconnect.';
+        console.log('🔌 WebSocket disconnected');
+        statusDiv.textContent = '🔌 Disconnected. Reconnecting...';
         statusDiv.className = 'disconnected';
+        
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          setTimeout(() => {
+            if (!ws || ws.readyState === WebSocket.CLOSED) {
+              console.log(`Reconnect attempt ${reconnectAttempts}...`);
+              connectWebSocket();
+            }
+          }, 3000);
+        }
       };
     }
     
-    function handleMessage(data) {
-      console.log('Message:', data.type);
+    function handleServerMessage(data) {
       switch(data.type) {
         case 'connected':
           playerId = data.playerId;
+          console.log('🎮 Player ID:', playerId);
+          statusDiv.textContent = `✅ Connected! ID: ${playerId.slice(0,8)}`;
           break;
+          
         case 'room_created':
+          currentRoom = data.roomCode;
+          roomCodeDisplay.textContent = data.roomCode;
+          updatePlayersList(data.players);
+          gamePanel.classList.remove('hidden');
+          statusDiv.textContent = `🎯 Room created: ${data.roomCode}`;
+          gameStatusDiv.textContent = 'Share code with friends! Click READY.';
+          console.log('🏠 Room created:', data.roomCode);
+          break;
+          
         case 'room_joined':
           currentRoom = data.roomCode;
           roomCodeDisplay.textContent = data.roomCode;
-          updatePlayers(data.players);
-          gamePanel.style.display = 'block';
-          statusDiv.textContent = `🎯 Room: ${data.roomCode}`;
+          updatePlayersList(data.players);
+          gamePanel.classList.remove('hidden');
+          statusDiv.textContent = `🎯 Joined room ${data.roomCode}`;
+          gameStatusDiv.textContent = 'Click READY when ready!';
+          console.log('👥 Joined room:', data.roomCode);
           break;
+          
         case 'player_joined':
         case 'player_left':
         case 'player_ready_update':
-          if (data.players) updatePlayers(data.players);
-          break;
-        case 'game_start':
-          gameStarted = true;
-          gameStatusDiv.textContent = '🎮 GAME STARTED! Use WASD/Arrows';
-          localPlayer.position.set((Math.random() - 0.5) * 30, -0.5, (Math.random() - 0.5) * 30);
-          break;
-        case 'player_moved':
-          if (data.playerId !== playerId && data.position) {
-            let p = otherPlayers.get(data.playerId);
-            if (!p) {
-              p = createPlayer(0x4ecdc4, false);
-              scene.add(p);
-              otherPlayers.set(data.playerId, p);
+          if (currentRoom && data.players) {
+            updatePlayersList(data.players);
+            if (data.allReady) {
+              gameStatusDiv.textContent = '🎮 All ready! Game starting...';
             }
-            p.position.set(data.position.x, -0.5, data.position.z);
           }
           break;
+          
+        case 'game_start':
+          gameStarted = true;
+          gameStatusDiv.textContent = '🎬 GAME STARTED! Move with WASD/Arrows';
+          statusDiv.textContent = '🔫 Battle Royale Mode Active!';
+          localPlayerMesh.position.set(
+            (Math.random() - 0.5) * 30, -0.8, (Math.random() - 0.5) * 30
+          );
+          console.log('🎮 Game started!');
+          break;
+          
+        case 'player_moved':
+          if (data.playerId !== playerId && data.position) {
+            let otherMesh = otherPlayers.get(data.playerId);
+            if (!otherMesh) {
+              const randomColor = getRandomColor();
+              otherMesh = createCartoonPlayer(randomColor, false, data.playerName || "Enemy");
+              scene.add(otherMesh);
+              otherPlayers.set(data.playerId, otherMesh);
+              console.log('➕ Added other player:', data.playerId);
+            }
+            if (otherMesh) {
+              otherMesh.position.set(data.position.x, -0.8, data.position.z);
+            }
+          }
+          break;
+          
         case 'error':
+          console.error('Server error:', data.message);
           statusDiv.textContent = `⚠️ ${data.message}`;
+          setTimeout(() => {
+            if (statusDiv.textContent.includes(data.message)) {
+              statusDiv.className = 'connected';
+            }
+          }, 3000);
           break;
       }
     }
     
-    function updatePlayers(players) {
+    function updatePlayersList(players) {
+      if (!players) return;
       playerCountSpan.textContent = players.length;
-      playersListDiv.innerHTML = players.map(p => `<div class="player-item">${p.name} ${p.isHost ? '👑' : ''} ${p.ready ? '✅' : '⏳'}</div>`).join('');
+      playersListDiv.innerHTML = players.map(p => 
+        `<div class="player-item">🎮 ${p.name} ${p.isHost ? '👑' : ''} ${p.ready ? '✅' : '⏳'}</div>`
+      ).join('');
     }
     
     // বাটন ইভেন্ট
     document.getElementById('quickPlayBtn').onclick = () => {
-      if (ws?.readyState === WebSocket.OPEN) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'quick_play' }));
         statusDiv.textContent = '🔍 Searching for match...';
-      } else { statusDiv.textContent = '❌ Not connected!'; }
+        console.log('Quick Play clicked');
+      } else {
+        statusDiv.textContent = '❌ Not connected! Reconnecting...';
+        statusDiv.className = 'disconnected';
+        connectWebSocket();
+      }
     };
     
     document.getElementById('createRoomBtn').onclick = () => {
-      if (ws?.readyState === WebSocket.OPEN) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'create_room', roomName: 'MJH Battle' }));
         statusDiv.textContent = '🏠 Creating room...';
-      } else { statusDiv.textContent = '❌ Not connected!'; }
+        console.log('Create Room clicked');
+      } else {
+        statusDiv.textContent = '❌ Not connected! Reconnecting...';
+        statusDiv.className = 'disconnected';
+        connectWebSocket();
+      }
     };
     
     document.getElementById('joinRoomBtn').onclick = () => {
-      joinModal.style.display = 'block';
+      joinModal.classList.remove('hidden');
+      roomCodeInput.value = '';
+      playerNameInput.value = '';
     };
     
     document.getElementById('confirmJoin').onclick = () => {
-      const code = document.getElementById('roomCode').value.trim().toUpperCase();
-      const name = document.getElementById('playerName').value.trim() || `Warrior_${Math.floor(Math.random()*1000)}`;
-      if (code && ws?.readyState === WebSocket.OPEN) {
+      const code = roomCodeInput.value.trim().toUpperCase();
+      const name = playerNameInput.value.trim() || `Warrior_${Math.floor(Math.random()*1000)}`;
+      if (code && ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'join_room', roomCode: code, playerName: name }));
-        joinModal.style.display = 'none';
-      } else { statusDiv.textContent = '❌ Invalid code or not connected!'; }
+        joinModal.classList.add('hidden');
+        statusDiv.textContent = `🔍 Joining room ${code}...`;
+        console.log('Join Room:', code, name);
+      } else if (!code) {
+        statusDiv.textContent = '⚠️ Please enter a room code!';
+      } else {
+        statusDiv.textContent = '❌ Not connected!';
+      }
     };
     
     document.getElementById('cancelJoin').onclick = () => {
-      joinModal.style.display = 'none';
+      joinModal.classList.add('hidden');
     };
     
     readyBtn.onclick = () => {
-      if (ws && currentRoom && !isReady) {
+      if (ws && currentRoom && !isReady && ws.readyState === WebSocket.OPEN) {
         isReady = true;
         ws.send(JSON.stringify({ type: 'player_ready' }));
         readyBtn.disabled = true;
         readyBtn.textContent = '✅ Ready!';
+        gameStatusDiv.textContent = 'Waiting for other players...';
+        console.log('Player ready');
       }
     };
     
     leaveBtn.onclick = () => {
-      if (ws && currentRoom) {
+      if (ws && currentRoom && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'leave_room' }));
-        gamePanel.style.display = 'none';
+        gamePanel.classList.add('hidden');
         currentRoom = null;
         gameStarted = false;
         isReady = false;
+        gameStatusDiv.textContent = '';
         readyBtn.disabled = false;
         readyBtn.textContent = '✅ Ready';
-        localPlayer.position.set(0, -0.5, 0);
-        otherPlayers.forEach(p => scene.remove(p));
-        otherPlayers.clear();
+        localPlayerMesh.position.set(0, -0.8, 0);
+        
+        otherPlayers.forEach((mesh, id) => {
+          scene.remove(mesh);
+          otherPlayers.delete(id);
+        });
+        console.log('Left room');
       }
     };
     
-    // How to Play মডাল
-    const modal = document.getElementById('howToPlayModal');
-    document.getElementById('howToPlayBtn').onclick = () => modal.style.display = 'flex';
-    document.getElementById('closeModalBtn').onclick = () => modal.style.display = 'none';
-    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
-    
-    // অ্যানিমেশন
+    // অ্যানিমেশন লুপ
     function animate() {
       requestAnimationFrame(animate);
       handleMovement();
@@ -554,14 +871,62 @@
     }
     animate();
     
+    // রঙিন গাছ যোগ করা
+    for (let i = 0; i < 50; i++) {
+      const treeGroup = new THREE.Group();
+      const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.0, 6);
+      const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8B5A2B });
+      const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+      trunk.position.y = 0.4;
+      treeGroup.add(trunk);
+      
+      const foliageGeo = new THREE.ConeGeometry(0.5, 0.8, 6);
+      const foliageMat = new THREE.MeshStandardMaterial({ color: 0x4caf50 });
+      const foliage = new THREE.Mesh(foliageGeo, foliageMat);
+      foliage.position.y = 0.9;
+      treeGroup.add(foliage);
+      
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 15 + Math.random() * 25;
+      treeGroup.position.x = Math.cos(angle) * radius;
+      treeGroup.position.z = Math.sin(angle) * radius;
+      scene.add(treeGroup);
+    }
+    
+    // রঙিন ফুল যোগ করা
+    for (let i = 0; i < 150; i++) {
+      const flowerGroup = new THREE.Group();
+      const stemGeo = new THREE.CylinderGeometry(0.03, 0.05, 0.25, 4);
+      const stemMat = new THREE.MeshStandardMaterial({ color: 0x4caf50 });
+      const stem = new THREE.Mesh(stemGeo, stemMat);
+      stem.position.y = 0.12;
+      flowerGroup.add(stem);
+      
+      const flowerColors = [0xff6b6b, 0xffcc5c, 0xff6f69, 0x88d8b0, 0x4ecdc4];
+      const petalGeo = new THREE.SphereGeometry(0.08, 8, 8);
+      const petalMat = new THREE.MeshStandardMaterial({ color: flowerColors[Math.floor(Math.random() * flowerColors.length)] });
+      const flowerHead = new THREE.Mesh(petalGeo, petalMat);
+      flowerHead.position.y = 0.25;
+      flowerGroup.add(flowerHead);
+      
+      const x = (Math.random() - 0.5) * 55;
+      const z = (Math.random() - 0.5) * 55;
+      if (Math.abs(x) < 27 && Math.abs(z) < 27) {
+        flowerGroup.position.set(x, -0.85, z);
+        scene.add(flowerGroup);
+      }
+    }
+    
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
     
+    // শুরু করুন
+    console.log('🎮 MJH PUBG Royale - Starting...');
+    console.log('💡 Connecting to Render WebSocket: wss://mjh-pubg-server.onrender.com');
     connectWebSocket();
-    console.log('Game started!');
   </script>
 </body>
 </html>
