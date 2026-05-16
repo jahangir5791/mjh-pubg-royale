@@ -1,683 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>MJH PUBG Royale - FULL WARZONE</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-    body { overflow: hidden; font-family: 'Arial', sans-serif; touch-action: none; background: #000; }
-    
-    .button-bar {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.9);
-      backdrop-filter: blur(12px);
-      border-radius: 60px;
-      padding: 10px 20px;
-      display: flex;
-      gap: 16px;
-      z-index: 200;
-      border: 1px solid rgba(255,100,100,0.8);
-    }
-    .button-bar button {
-      background: linear-gradient(45deg, #ff4d4d, #ffa500);
-      border: none;
-      padding: 8px 18px;
-      border-radius: 40px;
-      color: white;
-      font-weight: bold;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    #howToPlayBtn { background: linear-gradient(45deg, #2c7a7a, #1e4a6b); }
-    
-    .join-modal {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.96);
-      backdrop-filter: blur(20px);
-      border-radius: 32px;
-      padding: 28px;
-      z-index: 300;
-      border: 2px solid #ff6b6b;
-      min-width: 300px;
-      text-align: center;
-      display: none;
-    }
-    .join-modal input { width: 100%; padding: 12px; margin: 12px 0; border-radius: 40px; background: rgba(255,255,255,0.2); color: white; border: none; }
-    .join-modal button { padding: 8px 20px; margin: 8px; border-radius: 40px; font-weight: bold; cursor: pointer; }
-    #confirmJoin { background: #ff6b6b; color: white; }
-    #cancelJoin { background: #555; color: white; }
-    
-    .game-panel {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.88);
-      backdrop-filter: blur(16px);
-      border-radius: 24px;
-      padding: 12px 18px;
-      z-index: 200;
-      min-width: 200px;
-      color: white;
-      display: none;
-      border-right: 4px solid #ff6b6b;
-    }
-    .room-code { background: #ff6b6b; padding: 2px 12px; border-radius: 40px; display: inline-block; margin-left: 8px; }
-    .players-list { margin-top: 10px; max-height: 100px; overflow-y: auto; font-size: 12px; }
-    .player-item { background: rgba(255,255,255,0.2); margin: 3px 0; padding: 4px 8px; border-radius: 20px; }
-    
-    .scoreboard {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background: rgba(0,0,0,0.88);
-      backdrop-filter: blur(16px);
-      border-radius: 24px;
-      padding: 10px 18px;
-      z-index: 200;
-      min-width: 170px;
-      color: white;
-      display: none;
-      border-left: 4px solid gold;
-    }
-    .score { color: #ffcc44; font-size: 24px; margin-left: 8px; }
-    
-    #status {
-      position: fixed;
-      bottom: 100px;
-      left: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(8px);
-      padding: 8px;
-      border-radius: 60px;
-      text-align: center;
-      font-family: monospace;
-      font-size: 13px;
-      z-index: 100;
-      color: #eee;
-      font-weight: bold;
-    }
-    
-    .touch-controls {
-      position: fixed;
-      bottom: 120px;
-      left: 20px;
-      z-index: 250;
-      display: none;
-    }
-    .joystick {
-      width: 120px;
-      height: 120px;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(12px);
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.5);
-      position: relative;
-    }
-    .joystick-handle {
-      width: 50px;
-      height: 50px;
-      background: rgba(255,107,107,0.95);
-      border-radius: 50%;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      border: 2px solid white;
-    }
-    .action-buttons {
-      position: fixed;
-      bottom: 130px;
-      right: 20px;
-      z-index: 250;
-      display: none;
-      flex-direction: column;
-      gap: 18px;
-    }
-    .action-btn {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(12px);
-      border: 2px solid #ff6b6b;
-      color: white;
-      font-size: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-    .action-btn:active { transform: scale(0.94); background: rgba(255,50,50,0.9); }
-    
-    .pc-controls {
-      position: fixed;
-      bottom: 100px;
-      left: 20px;
-      background: rgba(0,0,0,0.7);
-      padding: 6px 16px;
-      border-radius: 40px;
-      color: white;
-      font-size: 13px;
-      z-index: 200;
-      display: none;
-    }
-    
-    @media (max-width: 768px) {
-      .button-bar button { padding: 5px 12px; font-size: 11px; }
-      .joystick { width: 100px; height: 100px; }
-      .joystick-handle { width: 42px; height: 42px; }
-      .action-btn { width: 60px; height: 60px; font-size: 24px; }
-      .touch-controls, .action-buttons { display: block; }
-      .pc-controls { display: none; }
-    }
-    @media (min-width: 769px) {
-      .touch-controls, .action-buttons { display: none !important; }
-      .pc-controls { display: block; }
-    }
-    .hidden { display: none; }
-    .connected { color: #0f0; }
-    .connecting { color: #ff0; }
-    .disconnected { color: #f66; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>MJH রাজ্যের যুদ্ধ - 3D কৌশলগত সাম্রাজ্য</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body { overflow: hidden; font-family: 'Segoe UI', 'Poppins', 'Arial', sans-serif; background: #0a0f1e; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        .ui-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; }
+        .top-bar { position: fixed; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; pointer-events: auto; z-index: 1100; gap: 15px; flex-wrap: wrap; }
+        .resources-panel { background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(12px); border-radius: 60px; padding: 8px 20px; display: flex; gap: 25px; border: 1px solid rgba(255, 215, 0, 0.3); }
+        .resource { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 16px; color: #ffd966; }
+        .kingdom-info { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(12px); border-radius: 40px; padding: 5px 20px; display: flex; align-items: center; gap: 20px; border: 1px solid #aa8c54; }
+        .action-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(16px); border-radius: 80px; padding: 10px 20px; display: flex; gap: 20px; pointer-events: auto; border: 1px solid rgba(255, 215, 0, 0.4); z-index: 1100; flex-wrap: wrap; justify-content: center; }
+        .btn { background: linear-gradient(135deg, #2c2c2c, #1a1a1a); border: none; padding: 12px 24px; border-radius: 50px; font-weight: bold; color: #ffefb9; cursor: pointer; transition: 0.2s; font-size: 16px; border-bottom: 2px solid #aa8c54; }
+        .btn-primary { background: linear-gradient(135deg, #3a2a1a, #2a1a0a); border-bottom-color: #ffaa33; color: #ffd966; }
+        .btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
+        .right-panel { position: fixed; bottom: 120px; right: 20px; width: 280px; background: rgba(10, 15, 25, 0.9); backdrop-filter: blur(16px); border-radius: 20px; border: 1px solid #aa8c54; pointer-events: auto; z-index: 1100; padding: 12px; }
+        .panel-header { display: flex; justify-content: space-between; border-bottom: 1px solid #ffd96650; padding-bottom: 6px; margin-bottom: 8px; color: #ffd966; font-weight: bold; }
+        .chat-log { height: 150px; overflow-y: auto; font-size: 12px; margin-bottom: 8px; color: #ddd; }
+        .chat-input { display: flex; gap: 5px; }
+        .chat-input input { flex: 1; background: #00000066; border: 1px solid #aa8c54; border-radius: 30px; padding: 5px 10px; color: white; }
+        .toast-notify { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px); border-radius: 60px; padding: 10px 24px; color: #ffd966; font-weight: bold; z-index: 1200; white-space: nowrap; border-left: 4px solid #ffaa33; display: none; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(20px); border-radius: 32px; padding: 20px; min-width: 320px; z-index: 2000; border: 2px solid #ffd966; display: none; flex-direction: column; gap: 12px; pointer-events: auto; max-height: 80vh; overflow-y: auto; }
+        .hero-card { background: #1e1a10; border-radius: 20px; padding: 12px; display: flex; gap: 15px; align-items: center; border: 1px solid #aa8c54; }
+        .close-modal { background: #aa3333; border: none; padding: 6px; border-radius: 40px; cursor: pointer; color:white; }
+        @media (max-width: 800px) { .btn { padding: 6px 14px; font-size: 12px; } .right-panel { width: 240px; } }
+    </style>
 </head>
 <body>
-  <div class="button-bar">
-    <button id="quickPlayBtn">🎮 QUICK WAR</button>
-    <button id="createRoomBtn">🏠 CREATE ROOM</button>
-    <button id="joinRoomBtn">👥 JOIN ROOM</button>
-    <button id="howToPlayBtn">📖 GUIDE</button>
-  </div>
-  
-  <div id="joinModal" class="join-modal">
-    <h3 style="color:#ff6b6b;">🔗 JOIN BATTLE</h3>
-    <input type="text" id="roomCode" placeholder="Room Code (MJHXXXX)">
-    <input type="text" id="playerName" placeholder="Your Name">
-    <button id="confirmJoin">JOIN</button>
-    <button id="cancelJoin">CANCEL</button>
-  </div>
-  
-  <div id="gamePanel" class="game-panel">
-    <div>🏠 ROOM: <span id="roomCodeDisplay" class="room-code"></span></div>
-    <div>👥 PLAYERS: <span id="playerCount"></span>/10</div>
-    <div class="players-list" id="playersList"></div>
-    <button id="readyBtn" style="background:#2e8b57; margin-top:8px;">✅ READY</button>
-    <button id="leaveBtn" style="background:#b22222; margin-top:4px;">🚪 LEAVE</button>
-    <div id="gameStatus" style="font-size:10px; margin-top:5px;"></div>
-  </div>
-  
-  <div class="scoreboard" id="scoreboard">
-    <div>🏆 SCORE: <span id="playerScore" class="score">0</span></div>
-    <div id="winnerDisplay" style="font-size:12px;"></div>
-  </div>
-  
-  <div id="status">🔌 CONNECTING...</div>
-  
-  <div class="pc-controls" id="pcControls">⌨️ WASD / ARROWS | 🔫 SPACE / CLICK | 🔄 R</div>
-  <div class="touch-controls" id="touchControls">
-    <div class="joystick" id="joystick"><div class="joystick-handle" id="joystickHandle"></div></div>
-  </div>
-  <div class="action-buttons" id="actionButtons">
-    <div class="action-btn" id="shootBtn">🔫</div>
-    <div class="action-btn" id="reloadBtn">🔄</div>
-  </div>
-  
-  <div id="howToPlayModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.98); z-index:400; align-items:center; justify-content:center;">
-    <div style="background:#1f2a3a; border-radius:40px; padding:28px; max-width:340px; color:white; border:1px solid gold;">
-      <h2 style="color:#ff6b6b;">🔥 FULL GUIDE</h2>
-      <p>✔ QUICK WAR → SOLO vs AI (8 enemies) + destructible world</p>
-      <p>✔ CREATE/JOIN ROOM → REAL MULTIPLAYER (WebSocket)</p>
-      <p>🖥️ WASD, SPACE/LEFT CLICK SHOOT, R RELOAD</p>
-      <p>📱 JOYSTICK + 🔫 SHOOT / 🔄 RELOAD</p>
-      <p>💥 DESTROY HOUSES, KILL ENEMIES, +10 PTS, GOLD CUP</p>
-      <button id="closeModalBtn" style="background:#ff6b6b; padding:12px; border-radius:60px; width:100%;">READY</button>
+<div class="ui-container">
+    <div class="top-bar">
+        <div class="resources-panel">
+            <div class="resource"><span>💰</span> <span id="goldAmount">5000</span></div>
+            <div class="resource"><span>🪵</span> <span id="woodAmount">3000</span></div>
+            <div class="resource"><span>🪨</span> <span id="stoneAmount">2500</span></div>
+            <div class="resource"><span>👥</span> <span id="troopCount">120</span></div>
+        </div>
+        <div class="kingdom-info">
+            <span class="kingdom-name">🏰 এমজেএইচ রাজ্য</span>
+            <span>🏆 লেভেল <span id="kingdomLevel">3</span></span>
+            <span>⚔️ শক্তি: <span id="totalPower">12500</span></span>
+        </div>
     </div>
-  </div>
+    <div class="action-bar">
+        <button class="btn btn-primary" id="buildFarmBtn">🌾 খামার বানাও</button>
+        <button class="btn btn-primary" id="recruitBtn">⚔️ সৈন্য নিয়োগ</button>
+        <button class="btn btn-primary" id="heroesBtn">📜 বীরগণ</button>
+        <button class="btn" id="allianceBtn">🤝 জোট</button>
+        <button class="btn" id="worldMapBtn">🗺️ বিশ্ব মানচিত্র</button>
+    </div>
+    <div class="right-panel">
+        <div class="panel-header"><span>🤝 ড্রাগন জোট</span><span>👥 ৪/২০</span></div>
+        <div class="chat-log" id="chatLog"><div>🛡️ স্বাগতম, মহারাজ!</div><div>📢 জোট: রাজ্য রক্ষা করো!</div></div>
+        <div class="chat-input"><input type="text" id="chatMessage" placeholder="জোটে বার্তা..."><button id="sendChatBtn" style="background:#aa8c54; border:none; border-radius:30px; padding:0 12px;">📨</button></div>
+    </div>
+</div>
+<div id="heroModal" class="modal"><h3 style="color:#ffd966;">📜 কিংবদন্তি বীরগণ</h3><div id="heroList"></div><button class="close-modal" id="closeHeroModal">বন্ধ করুন</button></div>
+<div id="notificationToast" class="toast-notify"></div>
 
-  <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }</script>
-  <script type="module">
+<script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }</script>
+<script type="module">
     import * as THREE from 'three';
-    
-    // ========== SOUND ==========
-    class WarSound {
-      constructor() { this.ctx = null; this.enabled = true; }
-      init() { if (!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } if (this.ctx.state === 'suspended') this.ctx.resume(); }
-      play(type, vol=0.45) {
-        if (!this.enabled) return;
-        this.init();
-        try {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.connect(gain); gain.connect(this.ctx.destination);
-          gain.gain.value = vol;
-          if (type === 'shoot') { osc.frequency.value = 880; osc.type = 'sawtooth'; gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.25); }
-          else if (type === 'explode') { osc.frequency.value = 130; osc.type = 'triangle'; gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.45); }
-          else if (type === 'reload') { osc.frequency.value = 520; osc.type = 'sine'; gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.2); }
-          else if (type === 'hit') { osc.frequency.value = 320; osc.type = 'square'; gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.15); }
-          else { osc.frequency.value = 660; }
-          osc.start(); osc.stop(this.ctx.currentTime+0.35);
-        } catch(e) {}
-      }
-    }
-    const warSound = new WarSound();
-    
-    // ---------- GLOBALS ----------
-    let ws = null, playerId = null, currentRoom = null, isReady = false, gameActive = false;
-    let moveX = 0, moveZ = 0;
-    let ammo = 30, maxAmmo = 30, reloading = false;
-    let health = 100, score = 0, dead = false;
+    import { OrbitControls } from 'https://unpkg.com/three@0.128.0/examples/jsm/controls/OrbitControls.js';
+
+    // ---------- রাজ্যের তথ্য ----------
+    let resources = { gold: 5000, wood: 3000, stone: 2500, troops: 120 };
+    let kingdomLevel = 3, totalPower = 12500;
     let buildings = [];
-    let enemies = new Map();      // AI enemies (solo)
-    let otherPlayers = new Map(); // multiplayer net
-    let lastShoot = 0;
-    const COOLDOWN = 350;
+    let heroes = [
+        { id: 1, name: "আর্থার রাজা", attack: 85, defense: 70, owned: false, cost: 800 },
+        { id: 2, name: "জুলিয়াস সিজার", attack: 90, defense: 65, owned: false, cost: 850 },
+        { id: 3, name: "চেঙ্গিস খান", attack: 95, defense: 60, owned: false, cost: 1000 }
+    ];
     
-    // ---------- THREE.JS WORLD ----------
+    // ---------- থ্রিডি দৃশ্য ----------
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a1030);
-    scene.fog = new THREE.FogExp2(0x0a1030, 0.005);
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.05, 220);
-    camera.position.set(0, 4.5, 14);
+    scene.background = new THREE.Color(0x1a2a3a);
+    scene.fog = new THREE.FogExp2(0x1a2a3a, 0.003);
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(15, 12, 20);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; controls.dampingFactor = 0.05; controls.zoomSpeed = 1.2; controls.panSpeed = 0.8; controls.target.set(0, 2, 0);
     
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0x4a724a, roughness: 0.8 });
-    const groundPlane = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), groundMat);
-    groundPlane.rotation.x = -Math.PI/2;
-    groundPlane.position.y = -1.3;
-    groundPlane.receiveShadow = true;
+    // ভূখণ্ড
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x4a6a3a, roughness: 0.8 });
+    const groundPlane = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), groundMat);
+    groundPlane.rotation.x = -Math.PI/2; groundPlane.position.y = -1; groundPlane.receiveShadow = true;
     scene.add(groundPlane);
-    const grid = new THREE.GridHelper(160, 40, 0x88aaff, 0x557799);
-    grid.position.y = -1.1;
-    scene.add(grid);
+    const gridHelper = new THREE.GridHelper(40, 20, 0xccaa66, 0x886633);
+    gridHelper.position.y = -0.9;
+    scene.add(gridHelper);
     
-    const ambient = new THREE.AmbientLight(0x4a5c6e);
-    scene.add(ambient);
-    const sunLight = new THREE.DirectionalLight(0xffeedd, 1.2);
-    sunLight.position.set(25, 35, 15);
-    sunLight.castShadow = true;
-    scene.add(sunLight);
-    const fillLight = new THREE.PointLight(0x6688aa, 0.6);
-    fillLight.position.set(0, 12, 0);
-    scene.add(fillLight);
+    // আলো
+    const ambientLight = new THREE.AmbientLight(0x555555);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xfff5e0, 1);
+    dirLight.position.set(10, 20, 5);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
     
-    // ========== REALISTIC SOLDIER (fully armed, human proportion) ==========
-    function createRealSoldier(color = 0xbc7a4a, isLocal = false) {
-      const group = new THREE.Group();
-      // torso
-      const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.48, 0.95, 12), new THREE.MeshStandardMaterial({ color: color, roughness: 0.4 }));
-      torso.position.y = 0.65; torso.castShadow = true;
-      group.add(torso);
-      // legs
-      const legMat = new THREE.MeshStandardMaterial({ color: 0x4d3e2c });
-      const leftLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.75, 8), legMat);
-      leftLeg.position.set(-0.28, 0.25, 0); leftLeg.castShadow = true;
-      const rightLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.75, 8), legMat);
-      rightLeg.position.set(0.28, 0.25, 0); rightLeg.castShadow = true;
-      group.add(leftLeg, rightLeg);
-      // head
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.45, 32, 32), new THREE.MeshStandardMaterial({ color: 0xe0ac69 }));
-      head.position.y = 1.12; head.castShadow = true;
-      group.add(head);
-      // eyes
-      const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-      const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 24, 24), eyeMat);
-      leftEye.position.set(-0.18, 1.24, 0.48);
-      const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 24, 24), eyeMat);
-      rightEye.position.set(0.18, 1.24, 0.48);
-      group.add(leftEye, rightEye);
-      const pupilMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
-      const leftPupil = new THREE.Mesh(new THREE.SphereGeometry(0.055, 24, 24), pupilMat);
-      leftPupil.position.set(-0.18, 1.235, 0.58);
-      const rightPupil = new THREE.Mesh(new THREE.SphereGeometry(0.055, 24, 24), pupilMat);
-      rightPupil.position.set(0.18, 1.235, 0.58);
-      group.add(leftPupil, rightPupil);
-      // helmet
-      const helm = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.56, 0.26, 8), new THREE.MeshStandardMaterial({ color: 0x8b6946, metalness: 0.7 }));
-      helm.position.y = 1.38; helm.castShadow = true;
-      group.add(helm);
-      // rifle
-      const rifleBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.18, 0.9), new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.85 }));
-      rifleBase.position.set(0.52, 0.88, 0.4);
-      group.add(rifleBase);
-      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.55, 8), new THREE.MeshStandardMaterial({ color: 0x666666 }));
-      barrel.rotation.x = Math.PI/2;
-      barrel.position.set(0.65, 0.88, 0.75);
-      group.add(barrel);
-      const mag = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.28, 0.15), new THREE.MeshStandardMaterial({ color: 0x222222 }));
-      mag.position.set(0.58, 0.7, 0.5);
-      group.add(mag);
-      // health bar
-      const hBarGroup = new THREE.Group();
-      const bgBar = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.13), new THREE.MeshStandardMaterial({ color: 0xcc3333 }));
-      bgBar.position.y = 1.75;
-      const fillBar = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.13), new THREE.MeshStandardMaterial({ color: 0x44ff44 }));
-      fillBar.position.y = 1.75;
-      fillBar.scale.x = 1;
-      hBarGroup.add(bgBar, fillBar);
-      group.add(hBarGroup);
-      group.userData = { healthBar: fillBar, health: 100 };
-      return group;
+    // দুর্গ
+    const castleBase = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.5, 2.2), new THREE.MeshStandardMaterial({ color: 0xccaa77, metalness: 0.4 }));
+    castleBase.position.set(0, 0.2, 0); castleBase.castShadow = true;
+    scene.add(castleBase);
+    const roofTop = new THREE.Mesh(new THREE.ConeGeometry(1.5, 1.2, 4), new THREE.MeshStandardMaterial({ color: 0xaa6644 }));
+    roofTop.position.set(0, 1.5, 0);
+    castleBase.add(roofTop);
+    
+    function addBuildingVisual(x, z) {
+        const building = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 1.4), new THREE.MeshStandardMaterial({ color: 0x88aa66 }));
+        building.position.set(x, -0.5 + 0.4, z);
+        building.castShadow = true;
+        scene.add(building);
+        buildings.push({ mesh: building, type: 'farm', x, z });
+    }
+    addBuildingVisual(2.5, 2.2); addBuildingVisual(-2.3, 2.0); addBuildingVisual(2.0, -2.5); addBuildingVisual(-2.5, -2.0);
+    
+    // গাছ
+    for (let i = 0; i < 120; i++) {
+        const tree = new THREE.Group();
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 0.7, 5), new THREE.MeshStandardMaterial({ color: 0x8B5A2B }));
+        trunk.position.y = 0.35;
+        const foliage = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.7, 5), new THREE.MeshStandardMaterial({ color: 0x5c9e3e }));
+        foliage.position.y = 0.75;
+        tree.add(trunk, foliage);
+        const angle = Math.random() * Math.PI * 2, radius = 12 + Math.random() * 16;
+        tree.position.x = Math.cos(angle) * radius; tree.position.z = Math.sin(angle) * radius;
+        scene.add(tree);
     }
     
-    let localPlayer = createRealSoldier(0xbc7a4a, true);
-    scene.add(localPlayer);
-    localPlayer.position.set(0, -1.0, 0);
-    
-    // ========== DESTRUCTIBLE BUILDINGS (45+ structures) ==========
-    function addBuilding(x, z, w = 2.6, h = 2.3, d = 2.6, color = 0xaa8866) {
-      const box = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: color, roughness: 0.5 }));
-      box.position.set(x, h/2 - 0.9, z);
-      box.castShadow = true; box.receiveShadow = true;
-      scene.add(box);
-      const roof = new THREE.Mesh(new THREE.ConeGeometry(w*0.75, h*0.45, 4), new THREE.MeshStandardMaterial({ color: 0xcc6644 }));
-      roof.position.set(x, h - 0.65 + h*0.2, z);
-      scene.add(roof);
-      buildings.push({ mesh: box, roof: roof, x, z, w, h, d, health: 70 });
+    // UI ফাংশন
+    function updateUI() {
+        document.getElementById('goldAmount').innerText = Math.floor(resources.gold);
+        document.getElementById('woodAmount').innerText = resources.wood;
+        document.getElementById('stoneAmount').innerText = resources.stone;
+        document.getElementById('troopCount').innerText = resources.troops;
+        document.getElementById('kingdomLevel').innerText = kingdomLevel;
+        document.getElementById('totalPower').innerText = totalPower;
     }
-    const buildingPositions = [
-      [-28,-22],[24,-28],[-15,28],[28,18],[-30,10],[30,-8],[8,-30],[-8,30],
-      [18,18],[-18,-18],[12,-12],[-12,12],[0,26],[0,-26],[26,0],[-26,0],
-      [22,22],[-22,22],[22,-22],[-22,-22],[15,-20],[-20,15],[20,-15],[-15,-20],
-      [5,-35],[-5,35],[35,5],[-35,-5],[32,14],[-32,-14],[-10,-10],[10,10],
-      [-40,5],[40,-5],[0,40],[0,-40],[-25,25],[25,-25]
-    ];
-    buildingPositions.forEach(pos => addBuilding(pos[0], pos[1], 2.6, 2.3, 2.6, 0xaa8866));
-    for(let i=0;i<28;i++) addBuilding((Math.random()-0.5)*80, (Math.random()-0.5)*80, 2.2, 2.0, 2.2, 0xbb9966);
-    
-    // trees & bushes
-    for(let i=0;i<160;i++) {
-      const tree = new THREE.Group();
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.45,0.95,5), new THREE.MeshStandardMaterial({ color: 0x8B5A2B }));
-      trunk.position.y = 0.5;
-      const foliage = new THREE.Mesh(new THREE.ConeGeometry(0.7,0.9,6), new THREE.MeshStandardMaterial({ color: 0x5c9e3e }));
-      foliage.position.y = 1.0;
-      tree.add(trunk, foliage);
-      let ang = Math.random()*Math.PI*2, rad = 28 + Math.random()*52;
-      tree.position.x = Math.cos(ang)*rad; tree.position.z = Math.sin(ang)*rad;
-      scene.add(tree);
+    function showNotification(msg, isError = false) {
+        const toast = document.getElementById('notificationToast');
+        toast.style.display = 'block';
+        toast.style.color = isError ? '#ffaa88' : '#ffd966';
+        toast.innerText = msg;
+        setTimeout(() => toast.style.display = 'none', 2500);
     }
-    // flowers / grass patches
-    for(let i=0;i<500;i++) {
-      let grass = new THREE.Mesh(new THREE.ConeGeometry(0.12,0.2,3), new THREE.MeshStandardMaterial({ color: 0x5a8f4c }));
-      grass.position.x = (Math.random()-0.5)*140;
-      grass.position.z = (Math.random()-0.5)*140;
-      grass.position.y = -1.15;
-      scene.add(grass);
+    function buildFarm() {
+        if (resources.wood >= 300 && resources.stone >= 200) {
+            resources.wood -= 300; resources.stone -= 200; totalPower += 180;
+            showNotification("🌾 খামার নির্মিত! সম্পদ উৎপাদন বেড়েছে।");
+            updateUI();
+            addBuildingVisual((Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
+        } else showNotification("প্রয়োজন ৩০০ কাঠ ও ২০০ পাথর!", true);
     }
-    
-    // ========== AI ENEMIES (8 soldiers for solo mode) ==========
-    function spawnAIEnemy(x, z, id) {
-      const enemy = createRealSoldier(0xaa6644, false);
-      scene.add(enemy);
-      enemy.position.set(x, -1.0, z);
-      enemy.userData = { id: id, health: 100, lastAttack: 0, type: 'ai' };
-      return enemy;
+    function recruitTroops() {
+        if (resources.gold >= 400) {
+            resources.gold -= 400; resources.troops += 50; totalPower += 350;
+            updateUI();
+            showNotification("⚔️ ৫০ সৈন্য নিয়োগ দেয়া হলো!");
+        } else showNotification("সোনার অভাব!", true);
     }
-    
-    function startSinglePlayer() {
-      gameActive = true; dead = false; health = 100; ammo = maxAmmo; reloading = false; score = 0;
-      document.getElementById('playerScore').innerText = "0";
-      document.getElementById('winnerDisplay').innerHTML = "";
-      document.getElementById('gameStatus').innerText = "⚔️ ELIMINATE ALL ENEMIES! ⚔️";
-      enemies.forEach(e => scene.remove(e));
-      enemies.clear();
-      for(let i=0;i<8;i++) {
-        let angle = Math.random()*Math.PI*2, dist = 12 + Math.random()*35;
-        let ex = Math.cos(angle)*dist, ez = Math.sin(angle)*dist;
-        enemies.set(i, spawnAIEnemy(ex, ez, i));
-      }
-      localPlayer.position.set(0, -1.0, 0);
-      warSound.play('explode',0.3);
-      updateStatusUI();
+    function openHeroModal() {
+        const container = document.getElementById('heroList');
+        container.innerHTML = '';
+        heroes.forEach(h => {
+            const card = document.createElement('div');
+            card.className = 'hero-card';
+            card.innerHTML = `<div>✨ <strong>${h.name}</strong><br>⚔️ আক্রমণ ${h.attack} 🛡️ প্রতিরোধ ${h.defense}</div>
+                <div style="margin-left:auto;">💰 ${h.cost} সোনা</div>
+                <button class="btn" data-id="${h.id}" style="background:#3a2a1a; padding:4px 12px;">${h.owned ? 'আয়ত্ত' : 'নিয়োগ'}</button>`;
+            container.appendChild(card);
+            const btn = card.querySelector('button');
+            if (!h.owned) btn.addEventListener('click', () => recruitHero(h.id));
+            else btn.disabled = true;
+        });
+        document.getElementById('heroModal').style.display = 'flex';
     }
-    
-    function updateStatusUI() {
-      const statDiv = document.getElementById('status');
-      statDiv.innerHTML = `🔫 ${ammo}/${maxAmmo} ${reloading ? '(RELOAD)' : ''} | ❤️ ${health} | 🏆 ${score} PTS`;
-      if(localPlayer.userData?.healthBar) localPlayer.userData.healthBar.scale.x = health/100;
+    function recruitHero(id) {
+        const hero = heroes.find(h => h.id === id);
+        if (hero && !hero.owned && resources.gold >= hero.cost) {
+            resources.gold -= hero.cost; hero.owned = true; totalPower += hero.attack * 5;
+            updateUI();
+            showNotification(`${hero.name} আপনার সেনাবাহিনীতে যোগ দিয়েছেন!`);
+            openHeroModal();
+        } else showNotification("সোনা কম!", true);
     }
-    
-    // shooting & destruction
-    function shootWeapon() {
-      if(!gameActive || dead || reloading || ammo <=0) return;
-      const now = Date.now();
-      if(now - lastShoot < COOLDOWN) return;
-      lastShoot = now;
-      ammo--;
-      warSound.play('shoot',0.55);
-      updateStatusUI();
-      const origin = localPlayer.position.clone(); origin.y += 0.9;
-      const direction = new THREE.Vector3(0,0,-1).applyQuaternion(localPlayer.quaternion);
-      
-      // hit AI enemies
-      enemies.forEach((enemy, idx) => {
-        const dist = origin.distanceTo(enemy.position);
-        if(dist < 15) {
-          const toEnemy = enemy.position.clone().sub(origin).normalize();
-          if(toEnemy.dot(direction) > 0.7) {
-            enemy.userData.health -= 34;
-            if(enemy.userData.health <= 0) {
-              scene.remove(enemy); enemies.delete(idx);
-              score += 10;
-              document.getElementById('playerScore').innerText = score;
-              warSound.play('explode',0.5);
-              updateStatusUI();
-            } else if(enemy.userData.healthBar) enemy.userData.healthBar.scale.x = enemy.userData.health/100;
-          }
-        }
-      });
-      // destroy buildings
-      buildings.forEach(b => {
-        const toB = new THREE.Vector3(b.x, 0, b.z).sub(origin);
-        const distB = toB.length();
-        if(distB < 18 && Math.abs(toB.clone().normalize().dot(direction)) > 0.6) {
-          b.health -= 28;
-          if(b.health <= 0) {
-            scene.remove(b.mesh); scene.remove(b.roof);
-            buildings = buildings.filter(bb => bb !== b);
-            warSound.play('explode',0.6);
-          }
-        }
-      });
-      // multiplayer damage send
-      if(ws && ws.readyState===WebSocket.OPEN && currentRoom) {
-        ws.send(JSON.stringify({ type: 'shoot', origin, direction }));
-      }
-      if(enemies.size === 0 && gameActive && !currentRoom) {
-        gameActive = false;
-        document.getElementById('winnerDisplay').innerHTML = "🏆 YOU WON! GOLD CUP! 🏆";
-        warSound.play('explode',0.8);
-      }
+    function sendAllianceChat() {
+        const input = document.getElementById('chatMessage');
+        const msg = input.value.trim();
+        if (!msg) return;
+        const chatDiv = document.getElementById('chatLog');
+        const newMsg = document.createElement('div');
+        newMsg.innerText = `👑 রাজা MJH: ${msg}`;
+        chatDiv.appendChild(newMsg);
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+        input.value = '';
+        setTimeout(() => {
+            const resp = document.createElement('div');
+            resp.innerText = `🤝 স্যার ল্যান্সলট: জয় হোক মহারাজ!`;
+            chatDiv.appendChild(resp);
+        }, 800);
+    }
+    function openWorldMap() {
+        showNotification("🗺️ বিশ্ব মানচিত্র: শীঘ্রই অঞ্চল সম্প্রসারণ ও প্লেয়ার যুদ্ধ আসছে!");
+        camera.position.set(25, 18, 28);
+        controls.target.set(5, 0, 5);
+        setTimeout(() => { camera.position.set(15, 12, 20); controls.target.set(0, 0, 0); }, 2000);
     }
     
-    function reloadGun() {
-      if(reloading || ammo === maxAmmo) return;
-      reloading = true;
-      warSound.play('reload',0.4);
-      setTimeout(()=>{ ammo = maxAmmo; reloading = false; updateStatusUI(); }, 1300);
-      updateStatusUI();
-    }
+    // প্যাসিভ ইনকাম
+    setInterval(() => {
+        let goldGain = 80 + buildings.length * 12 + Math.floor(resources.troops / 40);
+        resources.gold += goldGain;
+        resources.wood += 40 + buildings.filter(b => b.type === 'farm').length * 18;
+        updateUI();
+    }, 8000);
+    setInterval(() => { if (Math.random() > 0.65) showNotification("⚡ শত্রু গুপ্তচর ধরা পড়েছে!"); }, 25000);
     
-    // AI movement & attack
-    function updateAI() {
-      if(!gameActive || dead) return;
-      enemies.forEach((enemy, id) => {
-        const toPlayer = localPlayer.position.clone().sub(enemy.position);
-        const dist = toPlayer.length();
-        if(dist < 22 && dist > 2.5) {
-          const dir = toPlayer.normalize();
-          enemy.position.x += dir.x * 0.09;
-          enemy.position.z += dir.z * 0.09;
-          enemy.rotation.y = Math.atan2(toPlayer.x, toPlayer.z);
-        }
-        if(dist < 16 && (Date.now() - (enemy.userData.lastAttack||0) > 1600)) {
-          enemy.userData.lastAttack = Date.now();
-          health -= 13;
-          warSound.play('hit',0.3);
-          updateStatusUI();
-          if(health <= 0 && !dead) { dead = true; gameActive = false; document.getElementById('status').innerHTML = "💀 YOU DIED... GAME OVER"; warSound.play('explode',0.6); }
-        }
-      });
-    }
+    // বাটন ইভেন্ট
+    document.getElementById('buildFarmBtn').addEventListener('click', buildFarm);
+    document.getElementById('recruitBtn').addEventListener('click', recruitTroops);
+    document.getElementById('heroesBtn').addEventListener('click', openHeroModal);
+    document.getElementById('allianceBtn').addEventListener('click', () => showNotification("জোটের শক্তি বাড়ানোর জন্য সদস্য সংগ্রহ করুন!"));
+    document.getElementById('worldMapBtn').addEventListener('click', openWorldMap);
+    document.getElementById('sendChatBtn').addEventListener('click', sendAllianceChat);
+    document.getElementById('chatMessage').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendAllianceChat(); });
+    document.getElementById('closeHeroModal').addEventListener('click', () => document.getElementById('heroModal').style.display = 'none');
     
-    // ========== JOYSTICK & MOVEMENT ==========
-    const joyDiv = document.getElementById('joystick'), stickHandle = document.getElementById('joystickHandle');
-    let stickActive = false;
-    function moveJoy(e) {
-      if(!stickActive) return;
-      const rect = joyDiv.getBoundingClientRect();
-      let cx, cy; if(e.touches){ cx=e.touches[0].clientX; cy=e.touches[0].clientY; } else { cx=e.clientX; cy=e.clientY; }
-      let dx = cx - rect.left - rect.width/2, dy = cy - rect.top - rect.height/2;
-      const maxD = rect.width/2 - 25;
-      let dist = Math.hypot(dx,dy);
-      if(dist>maxD){ dx=dx/dist*maxD; dy=dy/dist*maxD; }
-      stickHandle.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-      moveX = dx/maxD; moveZ = dy/maxD;
-    }
-    joyDiv.addEventListener('touchstart', (e)=>{ stickActive=true; moveX=moveZ=0; stickHandle.style.transform='translate(-50%,-50%)'; moveJoy(e); e.preventDefault(); });
-    joyDiv.addEventListener('touchmove', moveJoy);
-    joyDiv.addEventListener('touchend', ()=>{ stickActive=false; moveX=moveZ=0; stickHandle.style.transform='translate(-50%,-50%)'; });
-    
-    const keys = { w:0, s:0, a:0, d:0, up:0, down:0, left:0, right:0, space:0, r:0 };
-    window.addEventListener('keydown', (e)=>{
-      let k=e.key.toLowerCase();
-      if(k==='w') keys.w=1; if(k==='s') keys.s=1; if(k==='a') keys.a=1; if(k==='d') keys.d=1;
-      if(k==='arrowup') keys.up=1; if(k==='arrowdown') keys.down=1; if(k==='arrowleft') keys.left=1; if(k==='arrowright') keys.right=1;
-      if(k===' '){ keys.space=1; e.preventDefault(); shootWeapon(); }
-      if(k==='r'){ reloadGun(); }
-    });
-    window.addEventListener('keyup', (e)=>{
-      let k=e.key.toLowerCase();
-      if(k==='w') keys.w=0; if(k==='s') keys.s=0; if(k==='a') keys.a=0; if(k==='d') keys.d=0;
-      if(k==='arrowup') keys.up=0; if(k==='arrowdown') keys.down=0; if(k==='arrowleft') keys.left=0; if(k==='arrowright') keys.right=0;
-      if(k===' ') keys.space=0;
-    });
-    
-    function handleMovement() {
-      if(!gameActive || dead) return;
-      let dx=0, dz=0;
-      dx += (keys.a || keys.left) ? -1 : (keys.d || keys.right) ? 1 : 0;
-      dz += (keys.w || keys.up) ? -1 : (keys.s || keys.down) ? 1 : 0;
-      let finalX = moveX !==0 ? moveX : dx;
-      let finalZ = moveZ !==0 ? moveZ : dz;
-      if(finalX!==0 || finalZ!==0){
-        localPlayer.position.x += finalX*0.27;
-        localPlayer.position.z += finalZ*0.27;
-        localPlayer.position.x = Math.max(-72, Math.min(72, localPlayer.position.x));
-        localPlayer.position.z = Math.max(-72, Math.min(72, localPlayer.position.z));
-        localPlayer.rotation.y = Math.atan2(finalX, finalZ);
-        if(ws && ws.readyState===WebSocket.OPEN && currentRoom && gameActive){
-          ws.send(JSON.stringify({ type: 'move', pos: { x: localPlayer.position.x, z: localPlayer.position.z } }));
-        }
-      }
-    }
-    
-    function updateCameraFollow() {
-      if(gameActive && localPlayer && !dead){
-        let target = localPlayer.position.clone().add(new THREE.Vector3(0, 2.5, 9));
-        camera.position.lerp(target, 0.09);
-        camera.lookAt(localPlayer.position);
-      }
-    }
-    
-    // ========== WEBSOCKET MULTIPLAYER ==========
-    function connectWebSocket() {
-      const wsUrl = 'wss://mjh-pubg-server.onrender.com';
-      ws = new WebSocket(wsUrl);
-      ws.onopen = () => { document.getElementById('status').innerHTML = '✅ Connected to server'; warSound.play('connect',0.3); };
-      ws.onmessage = (e) => {
-        try {
-          const data = JSON.parse(e.data);
-          if(data.type === 'connected') playerId = data.playerId;
-          else if(data.type === 'room_created' || data.type === 'room_joined'){
-            currentRoom = data.roomCode;
-            document.getElementById('roomCodeDisplay').innerText = data.roomCode;
-            updatePlayersList(data.players);
-            document.getElementById('gamePanel').style.display = 'block';
-            document.getElementById('scoreboard').style.display = 'block';
-            gameActive = true;
-            enemies.clear();
-          }
-          else if(data.type === 'player_joined' || data.type === 'player_left' || data.type === 'player_ready_update'){
-            if(data.players) updatePlayersList(data.players);
-          }
-          else if(data.type === 'game_start'){
-            gameActive = true; dead = false; health = 100; ammo = maxAmmo;
-            document.getElementById('gameStatus').innerHTML = "🎮 MULTIPLAYER STARTED!";
-          }
-          else if(data.type === 'player_moved'){
-            if(data.playerId !== playerId){
-              let p = otherPlayers.get(data.playerId);
-              if(!p){ p = createRealSoldier(0x4ecdc4); scene.add(p); otherPlayers.set(data.playerId, p); }
-              p.position.set(data.pos.x, -1.0, data.pos.z);
-            }
-          }
-          else if(data.type === 'player_damage' && data.targetId === playerId){
-            health -= data.damage; updateStatusUI();
-            if(health <= 0) { dead=true; gameActive=false; document.getElementById('status').innerHTML = "💀 YOU DIED"; }
-          }
-          else if(data.type === 'player_kill' && data.killerId === playerId){
-            score += 10; document.getElementById('playerScore').innerText = score;
-          }
-          else if(data.type === 'game_winner'){
-            if(data.winnerId === playerId) document.getElementById('winnerDisplay').innerHTML = "👑 YOU WIN! GOLD CUP! 👑";
-            else document.getElementById('winnerDisplay').innerHTML = `🏆 WINNER: ${data.winnerName}`;
-            gameActive = false;
-          }
-        } catch(err) {}
-      };
-      ws.onerror = () => { document.getElementById('status').innerHTML = '❌ Connection error'; };
-      ws.onclose = () => { document.getElementById('status').innerHTML = '🔌 Disconnected'; };
-    }
-    
-    function updatePlayersList(players) {
-      document.getElementById('playerCount').innerHTML = players.length;
-      const listDiv = document.getElementById('playersList');
-      listDiv.innerHTML = players.map(p => `<div class="player-item">${p.name} ${p.isHost ? '👑' : ''} ${p.ready ? '✅' : '⏳'}</div>`).join('');
-    }
-    
-    // UI buttons
-    document.getElementById('quickPlayBtn').onclick = () => { startSinglePlayer(); document.getElementById('gamePanel').style.display = 'block'; document.getElementById('scoreboard').style.display = 'block'; };
-    document.getElementById('createRoomBtn').onclick = () => { if(ws && ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify({ type: 'create_room', roomName: 'WarZone' })); else alert('WebSocket not connected'); };
-    document.getElementById('joinRoomBtn').onclick = () => document.getElementById('joinModal').style.display = 'flex';
-    document.getElementById('confirmJoin').onclick = () => {
-      const code = document.getElementById('roomCode').value.trim().toUpperCase();
-      const name = document.getElementById('playerName').value.trim() || `Soldier_${Math.floor(Math.random()*1000)}`;
-      if(ws && ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify({ type: 'join_room', roomCode: code, playerName: name }));
-      document.getElementById('joinModal').style.display = 'none';
-    };
-    document.getElementById('cancelJoin').onclick = () => document.getElementById('joinModal').style.display = 'none';
-    document.getElementById('readyBtn').onclick = () => { if(ws && currentRoom && !isReady){ isReady=true; ws.send(JSON.stringify({ type: 'player_ready' })); document.getElementById('readyBtn').disabled=true; } };
-    document.getElementById('leaveBtn').onclick = () => { if(ws && currentRoom) ws.send(JSON.stringify({ type: 'leave_room' })); gameActive=false; document.getElementById('gamePanel').style.display='none'; document.getElementById('scoreboard').style.display='none'; };
-    document.getElementById('shootBtn').addEventListener('click', () => shootWeapon());
-    document.getElementById('reloadBtn').addEventListener('click', () => reloadGun());
-    
-    const guideModal = document.getElementById('howToPlayModal');
-    document.getElementById('howToPlayBtn').onclick = () => guideModal.style.display = 'flex';
-    document.getElementById('closeModalBtn').onclick = () => guideModal.style.display = 'none';
-    
-    function animate() {
-      requestAnimationFrame(animate);
-      handleMovement();
-      updateAI();
-      updateCameraFollow();
-      renderer.render(scene, camera);
-    }
+    function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
     animate();
-    window.addEventListener('resize', () => { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
-    warSound.init();
-    connectWebSocket();
-    console.log("🚀 FULL ULTIMATE WARZONE LOADED");
-  </script>
+    window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+    updateUI();
+    console.log("🔥 MJH রাজ্যের যুদ্ধ - সম্পূর্ণ 3D কৌশলগত গেম লোড হয়েছে (বাংলা)");
+</script>
 </body>
 </html>
