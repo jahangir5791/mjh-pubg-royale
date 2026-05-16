@@ -1,7 +1,7 @@
 {
-  "id": "/mjh-pubg-royale",
-  "name": "MJH PUBG Royale",
-  "short_name": "PUBG Royale",
+  "id": "/mjh-royale-battle",
+  "name": "MJH Royale Battle",
+  "short_name": "MJH Royale Battle",
   "description": "Multiplayer Battle Royale PWA Game - Last Player Standing Wins!",
   "start_url": "/index.html",
   "scope": "/",
