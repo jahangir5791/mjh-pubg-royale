@@ -87,6 +87,24 @@
     .players-list { margin-top: 5px; max-height: 80px; overflow-y: auto; font-size: 10px; }
     .player-item { padding: 2px; margin: 1px; background: rgba(255,255,255,0.1); border-radius: 4px; }
     
+    /* স্কোরবোর্ড */
+    .scoreboard {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 8px 12px;
+      z-index: 200;
+      min-width: 140px;
+      font-size: 11px;
+      color: white;
+      display: none;
+    }
+    .scoreboard .score { color: #ffaa44; font-weight: bold; font-size: 16px; }
+    .winner-gold { color: #ffd700; font-weight: bold; text-shadow: 0 0 5px #ffd700; }
+    
     #status {
       position: fixed;
       bottom: 90px;
@@ -158,7 +176,9 @@
       justify-content: center;
       touch-action: none;
       cursor: pointer;
+      transition: transform 0.1s;
     }
+    .action-btn:active { transform: scale(0.95); background: rgba(255,107,107,0.8); }
     
     .pc-controls {
       position: fixed;
@@ -171,6 +191,23 @@
       font-size: 11px;
       z-index: 200;
       display: none;
+    }
+    
+    .health-bar {
+      position: absolute;
+      top: -15px;
+      left: -25px;
+      width: 50px;
+      height: 6px;
+      background: red;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .health-fill {
+      height: 100%;
+      width: 100%;
+      background: #0f0;
+      transition: width 0.2s;
     }
     
     .hidden { display: none !important; }
@@ -224,11 +261,17 @@
     <div id="gameStatus" style="margin-top:4px; font-size:9px;"></div>
   </div>
   
+  <!-- স্কোরবোর্ড -->
+  <div id="scoreboard" class="scoreboard">
+    <div>🏆 <span id="playerScore">0</span> pts</div>
+    <div id="winnerDisplay" style="font-size:10px; color:#ffd700;"></div>
+  </div>
+  
   <div id="status">🔌 Connecting...</div>
   
   <!-- ডেস্কটপ কন্ট্রোল ইন্ডিকেটর -->
   <div class="pc-controls" id="pcControls">
-    🖥️ <strong>Controls:</strong> W/A/S/D or Arrow Keys
+    🖥️ <strong>Controls:</strong> W/A/S/D | 🔫 Left Click or Space | 🔄 R to Reload
   </div>
   
   <!-- মোবাইল টাচ কন্ট্রোল -->
@@ -240,7 +283,7 @@
   
   <div class="action-buttons" id="actionButtons">
     <div class="action-btn" id="shootBtn">🔫</div>
-    <div class="action-btn" id="jumpBtn">🦘</div>
+    <div class="action-btn" id="reloadBtn">🔄</div>
   </div>
   
   <!-- How to Play মডাল -->
@@ -250,8 +293,8 @@
       <p><strong>🎮 Quick Play:</strong> একা খেলা শুরু</p>
       <p><strong>🏠 Create Room:</strong> রুম তৈরি করুন</p>
       <p><strong>👥 Join Room:</strong> রুম কোড দিয়ে যোগ দিন</p>
-      <p><strong>🖥️ PC:</strong> W/A/S/D বা Arrow Keys</p>
-      <p><strong>📱 Mobile:</strong> বাম দিকের জয়স্টিক</p>
+      <p><strong>🖥️ PC:</strong> W/A/S/D, Left Click/ Space to shoot, R to reload</p>
+      <p><strong>📱 Mobile:</strong> বাম দিকের জয়স্টিক, 🔫 shoot, 🔄 reload</p>
       <p><strong>🎯 Goal:</strong> শেষ পর্যন্ত বেঁচে থাকুন!</p>
       <button id="closeModalBtn" style="background:#ff6b6b; padding:10px; border:none; border-radius:25px; margin-top:15px; width:100%; color:white;">Got it 🔥</button>
     </div>
@@ -270,43 +313,44 @@
         this.enabled = true;
         this.audioContext = null;
       }
-      
       playSound(name, volume = 0.5) {
         if (!this.enabled) return;
         try {
-          if (!this.audioContext) {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-          }
-          if (this.audioContext.state === 'suspended') {
-            this.audioContext.resume();
-          }
-          
+          if (!this.audioContext) this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          if (this.audioContext.state === 'suspended') this.audioContext.resume();
           const oscillator = this.audioContext.createOscillator();
           const gainNode = this.audioContext.createGain();
           oscillator.connect(gainNode);
           gainNode.connect(this.audioContext.destination);
           gainNode.gain.value = volume;
-          
           switch(name) {
             case 'connect': oscillator.frequency.value = 523.25; oscillator.type = 'sine'; break;
             case 'click': oscillator.frequency.value = 440; oscillator.type = 'sine'; break;
             case 'gameStart': oscillator.frequency.value = 659.25; oscillator.type = 'square'; break;
             case 'move': oscillator.frequency.value = 220; oscillator.type = 'sine'; gainNode.gain.value = 0.05; break;
             case 'shoot': oscillator.frequency.value = 880; oscillator.type = 'sawtooth'; break;
-            case 'jump': oscillator.frequency.value = 329.63; oscillator.type = 'sine'; break;
+            case 'reload': oscillator.frequency.value = 329.63; oscillator.type = 'sine'; break;
+            case 'explosion': oscillator.frequency.value = 220; oscillator.type = 'triangle'; break;
             default: oscillator.frequency.value = 440;
           }
-          gainNode.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + 0.5);
+          gainNode.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + 0.3);
           oscillator.start();
-          oscillator.stop(this.audioContext.currentTime + 0.5);
-        } catch(e) { console.log('Sound error:', e); }
+          oscillator.stop(this.audioContext.currentTime + 0.3);
+        } catch(e) {}
       }
     }
-    
     const sound = new SoundManager();
     
     let ws = null, playerId = null, currentRoom = null, isReady = false, gameStarted = false;
     let moveX = 0, moveZ = 0;
+    let ammo = 30, maxAmmo = 30, isReloading = false;
+    let playerHealth = 100;
+    let playerScore = 0;
+    let isDead = false;
+    let buildings = [];
+    let bullets = [];
+    let lastShootTime = 0;
+    const shootCooldown = 500;
     
     // 3D সেটআপ
     const scene = new THREE.Scene();
@@ -322,25 +366,86 @@
     document.body.appendChild(renderer.domElement);
     
     // গ্রাউন্ড
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshStandardMaterial({ color: 0x5c9e3e, roughness: 0.8 }));
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: 0x5c9e3e, roughness: 0.8 }));
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -1;
     ground.receiveShadow = true;
     scene.add(ground);
     
-    const grid = new THREE.GridHelper(60, 20, 0x4ecdc4, 0x2c5f2d);
+    const grid = new THREE.GridHelper(100, 30, 0x4ecdc4, 0x2c5f2d);
     grid.position.y = -0.9;
     scene.add(grid);
     
     // লাইট
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
     const dirLight = new THREE.DirectionalLight(0xffffff, 1);
     dirLight.position.set(10, 20, 5);
     dirLight.castShadow = true;
     scene.add(dirLight);
     
-    // কার্টুন প্লেয়ার
+    // গাছ
+    for (let i = 0; i < 60; i++) {
+      const tree = new THREE.Group();
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 0.8, 6), new THREE.MeshStandardMaterial({ color: 0x8B5A2B }));
+      trunk.position.y = 0.4;
+      tree.add(trunk);
+      const foliage = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.7, 6), new THREE.MeshStandardMaterial({ color: 0x4caf50 }));
+      foliage.position.y = 0.85;
+      tree.add(foliage);
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 20 + Math.random() * 35;
+      tree.position.x = Math.cos(angle) * radius;
+      tree.position.z = Math.sin(angle) * radius;
+      scene.add(tree);
+    }
+    
+    // ঘরবাড়ি (buildings)
+    function addBuilding(x, z, width, height, depth, color) {
+      const buildingMat = new THREE.MeshStandardMaterial({ color: color || 0xaa8866 });
+      const building = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), buildingMat);
+      building.position.set(x, height/2 - 0.5, z);
+      building.castShadow = true;
+      building.receiveShadow = true;
+      scene.add(building);
+      
+      const roofMat = new THREE.MeshStandardMaterial({ color: 0xcc5533 });
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(width*0.7, height*0.4, 4), roofMat);
+      roof.position.set(x, height - 0.5 + height*0.2, z);
+      roof.castShadow = true;
+      scene.add(roof);
+      
+      buildings.push({ mesh: building, roof, x, z, width, height, depth, health: 50, maxHealth: 50 });
+    }
+    
+    addBuilding(-15, -12, 2.5, 2, 2.5, 0xaa8866);
+    addBuilding(12, -10, 2.5, 2.5, 2.5, 0xaa8866);
+    addBuilding(8, 15, 3, 2.2, 3, 0xaa8866);
+    addBuilding(-10, 14, 2.5, 2, 2.5, 0xaa8866);
+    addBuilding(0, -18, 3, 2.5, 3, 0xaa8866);
+    addBuilding(18, 5, 2.5, 2, 2.5, 0xaa8866);
+    addBuilding(-18, 3, 2.5, 2.2, 2.5, 0xaa8866);
+    addBuilding(5, -5, 2, 1.8, 2, 0xaa8866);
+    addBuilding(-5, 5, 2, 1.8, 2, 0xaa8866);
+    
+    // ফুল
+    for (let i = 0; i < 150; i++) {
+      const flower = new THREE.Group();
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.25, 4), new THREE.MeshStandardMaterial({ color: 0x4caf50 }));
+      stem.position.y = 0.12;
+      flower.add(stem);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshStandardMaterial({ color: [0xff6b6b, 0xffcc5c, 0xff6f69][Math.floor(Math.random() * 3)] }));
+      head.position.y = 0.25;
+      flower.add(head);
+      const x = (Math.random() - 0.5) * 90;
+      const z = (Math.random() - 0.5) * 90;
+      if (Math.abs(x) < 42 && Math.abs(z) < 42 && !buildings.some(b => Math.hypot(b.x - x, b.z - z) < 3)) {
+        flower.position.set(x, -0.85, z);
+        scene.add(flower);
+      }
+    }
+    
+    // কার্টুন প্লেয়ার (পিস্তল হাতে)
     function createPlayer(color = 0xff6b6b, isLocal = false) {
       const group = new THREE.Group();
       const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.4, 1.0, 8), new THREE.MeshStandardMaterial({ color, roughness: 0.3 }));
@@ -365,6 +470,27 @@
       cap.position.y = 1.38;
       group.add(cap);
       
+      // পিস্তল
+      const gun = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.15, 0.5), new THREE.MeshStandardMaterial({ color: 0x333333 }));
+      gun.position.set(0.4, 0.8, 0.3);
+      group.add(gun);
+      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.4, 6), new THREE.MeshStandardMaterial({ color: 0x555555 }));
+      barrel.rotation.x = Math.PI/2;
+      barrel.position.set(0.55, 0.8, 0.55);
+      group.add(barrel);
+      
+      // হেলথ বার
+      const healthBar = new THREE.Group();
+      const bgBar = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.15), new THREE.MeshStandardMaterial({ color: 0xff0000 }));
+      bgBar.position.y = 1.7;
+      healthBar.add(bgBar);
+      const fillBar = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.15), new THREE.MeshStandardMaterial({ color: 0x00ff00 }));
+      fillBar.position.y = 1.7;
+      fillBar.scale.x = 1;
+      healthBar.add(fillBar);
+      group.add(healthBar);
+      group.userData = { healthBar: fillBar, health: 100 };
+      
       return group;
     }
     
@@ -374,40 +500,7 @@
     
     const otherPlayers = new Map();
     
-    // গাছ
-    for (let i = 0; i < 50; i++) {
-      const tree = new THREE.Group();
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 0.8, 6), new THREE.MeshStandardMaterial({ color: 0x8B5A2B }));
-      trunk.position.y = 0.4;
-      tree.add(trunk);
-      const foliage = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.7, 6), new THREE.MeshStandardMaterial({ color: 0x4caf50 }));
-      foliage.position.y = 0.85;
-      tree.add(foliage);
-      const angle = Math.random() * Math.PI * 2;
-      const radius = 15 + Math.random() * 25;
-      tree.position.x = Math.cos(angle) * radius;
-      tree.position.z = Math.sin(angle) * radius;
-      scene.add(tree);
-    }
-    
-    // ফুল
-    for (let i = 0; i < 120; i++) {
-      const flower = new THREE.Group();
-      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.25, 4), new THREE.MeshStandardMaterial({ color: 0x4caf50 }));
-      stem.position.y = 0.12;
-      flower.add(stem);
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshStandardMaterial({ color: [0xff6b6b, 0xffcc5c, 0xff6f69][Math.floor(Math.random() * 3)] }));
-      head.position.y = 0.25;
-      flower.add(head);
-      const x = (Math.random() - 0.5) * 55;
-      const z = (Math.random() - 0.5) * 55;
-      if (Math.abs(x) < 27 && Math.abs(z) < 27) {
-        flower.position.set(x, -0.85, z);
-        scene.add(flower);
-      }
-    }
-    
-    // ============= জয়স্টিক কন্ট্রোল =============
+    // জয়স্টিক
     const joystick = document.getElementById('joystick');
     const handle = document.getElementById('joystickHandle');
     let active = false;
@@ -427,29 +520,15 @@
       let dy = clientY - rect.top - rect.height/2;
       const distance = Math.hypot(dx, dy);
       const maxDist = rect.width/2 - 25;
-      if (distance > maxDist) {
-        dx = dx / distance * maxDist;
-        dy = dy / distance * maxDist;
-      }
+      if (distance > maxDist) { dx = dx / distance * maxDist; dy = dy / distance * maxDist; }
       handle.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
       moveX = dx / maxDist;
       moveZ = dy / maxDist;
       if ((moveX !== 0 || moveZ !== 0) && gameStarted) sound.playSound('move', 0.05);
     }
     
-    function startDrag(e) {
-      active = true;
-      moveX = moveZ = 0;
-      handle.style.transform = 'translate(-50%, -50%)';
-      updateJoystick(e);
-      e.preventDefault();
-    }
-    
-    function endDrag() {
-      active = false;
-      moveX = moveZ = 0;
-      handle.style.transform = 'translate(-50%, -50%)';
-    }
+    function startDrag(e) { active = true; moveX = moveZ = 0; handle.style.transform = 'translate(-50%, -50%)'; updateJoystick(e); e.preventDefault(); }
+    function endDrag() { active = false; moveX = moveZ = 0; handle.style.transform = 'translate(-50%, -50%)'; }
     
     if (joystick) {
       joystick.addEventListener('touchstart', startDrag);
@@ -458,22 +537,85 @@
     }
     
     // ডেস্কটপ কীবোর্ড
-    const keys = { w: false, s: false, a: false, d: false, up: false, down: false, left: false, right: false };
+    const keys = { w: false, s: false, a: false, d: false, up: false, down: false, left: false, right: false, space: false, r: false };
     window.addEventListener('keydown', (e) => {
       const key = e.key.toLowerCase();
       if (keys.hasOwnProperty(key)) keys[key] = true;
-      if (keys.hasOwnProperty(key === 'arrowup' ? 'up' : key === 'arrowdown' ? 'down' : key === 'arrowleft' ? 'left' : key === 'arrowright' ? 'right' : key)) {
-        e.preventDefault();
-      }
+      if (key === ' ') keys.space = true;
+      if (key === 'r') keys.r = true;
+      if (key === 'arrowup') keys.up = true;
+      if (key === 'arrowdown') keys.down = true;
+      if (key === 'arrowleft') keys.left = true;
+      if (key === 'arrowright') keys.right = true;
+      if (keys.w || keys.up || keys.s || keys.down || keys.a || keys.left || keys.d || keys.right) e.preventDefault();
     });
     window.addEventListener('keyup', (e) => {
       const key = e.key.toLowerCase();
       if (keys.hasOwnProperty(key)) keys[key] = false;
+      if (key === ' ') keys.space = false;
+      if (key === 'r') keys.r = false;
+      if (key === 'arrowup') keys.up = false;
+      if (key === 'arrowdown') keys.down = false;
+      if (key === 'arrowleft') keys.left = false;
+      if (key === 'arrowright') keys.right = false;
     });
     
-    // ক্যামেরা ফলো
+    // শুট ফাংশন
+    function shoot() {
+      if (!gameStarted || isDead || isReloading || ammo <= 0) return;
+      const now = Date.now();
+      if (now - lastShootTime < shootCooldown) return;
+      lastShootTime = now;
+      ammo--;
+      sound.playSound('shoot', 0.3);
+      updateAmmoDisplay();
+      
+      // রশ্মি
+      const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(localPlayer.quaternion);
+      const origin = localPlayer.position.clone();
+      origin.y += 0.8;
+      
+      // raycast অন্যদের
+      otherPlayers.forEach((player, id) => {
+        const distance = origin.distanceTo(player.position);
+        if (distance < 5) {
+          const toTarget = player.position.clone().sub(origin).normalize();
+          if (toTarget.dot(direction) > 0.7) {
+            // Damage other player
+            ws.send(JSON.stringify({ type: 'damage_player', targetId: id, damage: 34 }));
+          }
+        }
+      });
+      
+      // buildings damage
+      buildings.forEach(b => {
+        const toBuilding = new THREE.Vector3(b.x, 0, b.z).sub(origin);
+        const distance = toBuilding.length();
+        if (distance < 8 && Math.abs(toBuilding.normalize().dot(direction)) > 0.7) {
+          b.health -= 20;
+          if (b.health <= 0) {
+            scene.remove(b.mesh);
+            scene.remove(b.roof);
+            buildings = buildings.filter(bb => bb !== b);
+          }
+        }
+      });
+    }
+    
+    function reload() {
+      if (isReloading || ammo === maxAmmo) return;
+      isReloading = true;
+      sound.playSound('reload', 0.3);
+      setTimeout(() => { ammo = maxAmmo; isReloading = false; updateAmmoDisplay(); }, 1500);
+    }
+    
+    function updateAmmoDisplay() {
+      const statusDiv = document.getElementById('status');
+      if (gameStarted) statusDiv.innerHTML = `🔫 ${ammo}/${maxAmmo} ${isReloading ? '(Reloading...)' : ''} | ❤️ ${playerHealth} | 🏆 ${playerScore} pts`;
+    }
+    
     function updateCamera() {
-      if (gameStarted && localPlayer) {
+      if (gameStarted && localPlayer && !isDead) {
         const targetPos = localPlayer.position.clone();
         camera.position.lerp(targetPos.clone().add(new THREE.Vector3(0, 3, 8)), 0.1);
         camera.lookAt(targetPos);
@@ -482,26 +624,22 @@
     
     let lastPos = { x: 0, z: 0 };
     function handleMovement() {
-      if (!gameStarted || !localPlayer) return;
-      
+      if (!gameStarted || !localPlayer || isDead) return;
       let dx = 0, dz = 0;
       if (keys.w || keys.up) dz -= 1;
       if (keys.s || keys.down) dz += 1;
       if (keys.a || keys.left) dx -= 1;
       if (keys.d || keys.right) dx += 1;
-      
       let finalX = moveX !== 0 ? moveX : dx;
       let finalZ = moveZ !== 0 ? moveZ : dz;
-      
       if (finalX !== 0 || finalZ !== 0) {
-        localPlayer.position.x += finalX * 0.2;
-        localPlayer.position.z += finalZ * 0.2;
-        localPlayer.position.x = Math.max(-28, Math.min(28, localPlayer.position.x));
-        localPlayer.position.z = Math.max(-28, Math.min(28, localPlayer.position.z));
+        localPlayer.position.x += finalX * 0.25;
+        localPlayer.position.z += finalZ * 0.25;
+        localPlayer.position.x = Math.max(-45, Math.min(45, localPlayer.position.x));
+        localPlayer.position.z = Math.max(-45, Math.min(45, localPlayer.position.z));
         const angle = Math.atan2(finalX, finalZ);
         localPlayer.rotation.y = angle;
-        
-        if (ws && ws.readyState === WebSocket.OPEN) {
+        if (ws && ws.readyState === WebSocket.OPEN && !isDead) {
           const pos = { x: localPlayer.position.x, y: 0, z: localPlayer.position.z };
           if (Math.hypot(pos.x - lastPos.x, pos.z - lastPos.z) > 0.3) {
             ws.send(JSON.stringify({ type: 'update_position', position: pos }));
@@ -509,6 +647,8 @@
           }
         }
       }
+      if (keys.space) shoot();
+      if (keys.r) reload();
     }
     
     // UI এলিমেন্ট
@@ -521,6 +661,9 @@
     const leaveBtn = document.getElementById('leaveBtn');
     const gameStatusDiv = document.getElementById('gameStatus');
     const joinModal = document.getElementById('joinModal');
+    const scoreboard = document.getElementById('scoreboard');
+    const playerScoreSpan = document.getElementById('playerScore');
+    const winnerDisplay = document.getElementById('winnerDisplay');
     
     // WebSocket
     function connectWebSocket() {
@@ -545,6 +688,7 @@
           roomCodeDisplay.textContent = data.roomCode;
           updatePlayers(data.players);
           gamePanel.style.display = 'block';
+          scoreboard.style.display = 'block';
           statusDiv.textContent = `🎯 Room: ${data.roomCode}`;
           sound.playSound('click', 0.2);
           break;
@@ -553,10 +697,51 @@
           break;
         case 'game_start':
           gameStarted = true;
-          gameStatusDiv.textContent = '🎮 GAME STARTED!';
+          isDead = false;
+          playerHealth = 100;
+          playerScore = 0;
+          ammo = maxAmmo;
+          gameStatusDiv.textContent = '🎮 GAME STARTED! Fight!';
           statusDiv.textContent = '🔫 Battle Royale Mode Active!';
-          localPlayer.position.set((Math.random()-0.5)*30, -0.8, (Math.random()-0.5)*30);
+          localPlayer.position.set((Math.random()-0.5)*50, -0.8, (Math.random()-0.5)*50);
+          playerScoreSpan.textContent = playerScore;
+          winnerDisplay.textContent = '';
           sound.playSound('gameStart', 0.5);
+          updateAmmoDisplay();
+          break;
+        case 'player_damage':
+          if (data.targetId === playerId) {
+            playerHealth -= data.damage;
+            if (localPlayer.userData?.healthBar) localPlayer.userData.healthBar.scale.x = playerHealth/100;
+            updateAmmoDisplay();
+            if (playerHealth <= 0 && !isDead) {
+              isDead = true;
+              gameStarted = false;
+              statusDiv.textContent = '💀 YOU DIED! Game Over!';
+              gameStatusDiv.textContent = '💀 You were eliminated!';
+              sound.playSound('explosion', 0.5);
+            }
+          }
+          break;
+        case 'player_kill':
+          if (data.killerId === playerId) {
+            playerScore += 10;
+            playerScoreSpan.textContent = playerScore;
+            statusDiv.textContent = `🔫 You killed ${data.victimName}! +10 pts`;
+            sound.playSound('explosion', 0.4);
+          }
+          break;
+        case 'game_winner':
+          if (data.winnerId === playerId) {
+            winnerDisplay.textContent = '👑 YOU WIN! GOLD CUP! 👑';
+            playerScore += 50;
+            playerScoreSpan.textContent = playerScore;
+            statusDiv.textContent = '🏆 VICTORY! You are the Champion! 🏆';
+            sound.playSound('gameStart', 0.6);
+          } else {
+            winnerDisplay.textContent = `🏆 Winner: ${data.winnerName}`;
+          }
+          gameStarted = false;
           break;
         case 'player_moved':
           if (data.playerId !== playerId && data.position) {
@@ -576,21 +761,12 @@
     
     // বাটন ইভেন্ট
     document.getElementById('quickPlayBtn').onclick = () => { 
-      if (ws?.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'quick_play' }));
-        sound.playSound('click', 0.2);
-      }
+      if (ws?.readyState === WebSocket.OPEN) { ws.send(JSON.stringify({ type: 'quick_play' })); sound.playSound('click', 0.2); }
     };
     document.getElementById('createRoomBtn').onclick = () => { 
-      if (ws?.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'create_room', roomName: 'MJH Battle' }));
-        sound.playSound('click', 0.2);
-      }
+      if (ws?.readyState === WebSocket.OPEN) { ws.send(JSON.stringify({ type: 'create_room', roomName: 'MJH Battle' })); sound.playSound('click', 0.2); }
     };
-    document.getElementById('joinRoomBtn').onclick = () => { 
-      joinModal.style.display = 'block';
-      sound.playSound('click', 0.2);
-    };
+    document.getElementById('joinRoomBtn').onclick = () => { joinModal.style.display = 'block'; sound.playSound('click', 0.2); };
     document.getElementById('confirmJoin').onclick = () => {
       const code = document.getElementById('roomCode').value.trim().toUpperCase();
       const name = document.getElementById('playerName').value.trim() || `Player_${Math.floor(Math.random()*1000)}`;
@@ -614,9 +790,11 @@
       if (ws && currentRoom) { 
         ws.send(JSON.stringify({ type: 'leave_room' })); 
         gamePanel.style.display = 'none'; 
+        scoreboard.style.display = 'none';
         currentRoom = null; 
         gameStarted = false; 
         isReady = false; 
+        isDead = false;
         readyBtn.disabled = false; 
         readyBtn.textContent = '✅ Ready'; 
         localPlayer.position.set(0, -0.8, 0); 
@@ -626,13 +804,11 @@
       } 
     };
     
-    // শুট এবং জাম্প বাটন
     const shootBtn = document.getElementById('shootBtn');
-    const jumpBtn = document.getElementById('jumpBtn');
-    if (shootBtn) shootBtn.addEventListener('click', () => sound.playSound('shoot', 0.3));
-    if (jumpBtn) jumpBtn.addEventListener('click', () => sound.playSound('jump', 0.3));
+    const reloadBtn = document.getElementById('reloadBtn');
+    if (shootBtn) shootBtn.addEventListener('click', () => shoot());
+    if (reloadBtn) reloadBtn.addEventListener('click', () => reload());
     
-    // How to Play
     const modal = document.getElementById('howToPlayModal');
     document.getElementById('howToPlayBtn').onclick = () => modal.style.display = 'flex';
     document.getElementById('closeModalBtn').onclick = () => modal.style.display = 'none';
