@@ -3,832 +3,681 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>MJH PUBG Royale - 3D Multiplayer Battle Royale</title>
+  <title>MJH PUBG Royale - FULL WARZONE</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { overflow: hidden; font-family: 'Arial', sans-serif; touch-action: none; }
+    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+    body { overflow: hidden; font-family: 'Arial', sans-serif; touch-action: none; background: #000; }
     
-    /* বাটন বার - নিচের দিকে */
     .button-bar {
       position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(10px);
-      border-radius: 50px;
-      padding: 10px 15px;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(12px);
+      border-radius: 60px;
+      padding: 10px 20px;
       display: flex;
-      gap: 10px;
+      gap: 16px;
       z-index: 200;
-      border: 1px solid rgba(0,255,255,0.3);
+      border: 1px solid rgba(255,100,100,0.8);
     }
-    
     .button-bar button {
-      background: linear-gradient(45deg, #ff6b6b, #feca57);
+      background: linear-gradient(45deg, #ff4d4d, #ffa500);
       border: none;
-      padding: 8px 16px;
+      padding: 8px 18px;
       border-radius: 40px;
       color: white;
       font-weight: bold;
+      font-size: 14px;
       cursor: pointer;
-      font-size: 12px;
     }
+    #howToPlayBtn { background: linear-gradient(45deg, #2c7a7a, #1e4a6b); }
     
-    #howToPlayBtn { background: linear-gradient(45deg, #4ecdc4, #44a08d) !important; }
-    
-    /* জয়েন মডাল */
     .join-modal {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.95);
-      border-radius: 20px;
-      padding: 20px;
-      text-align: center;
+      background: rgba(0,0,0,0.96);
+      backdrop-filter: blur(20px);
+      border-radius: 32px;
+      padding: 28px;
       z-index: 300;
       border: 2px solid #ff6b6b;
-      min-width: 260px;
+      min-width: 300px;
+      text-align: center;
       display: none;
     }
-    
-    .join-modal input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 10px;
-      border: none;
-      background: rgba(255,255,255,0.2);
-      color: white;
-    }
-    
-    .join-modal button { padding: 8px 16px; margin: 5px; border-radius: 20px; border: none; cursor: pointer; }
+    .join-modal input { width: 100%; padding: 12px; margin: 12px 0; border-radius: 40px; background: rgba(255,255,255,0.2); color: white; border: none; }
+    .join-modal button { padding: 8px 20px; margin: 8px; border-radius: 40px; font-weight: bold; cursor: pointer; }
     #confirmJoin { background: #ff6b6b; color: white; }
     #cancelJoin { background: #555; color: white; }
     
-    /* গেম প্যানেল */
     .game-panel {
       position: fixed;
-      top: 10px;
-      right: 10px;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(10px);
-      border-radius: 12px;
-      padding: 8px 12px;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(16px);
+      border-radius: 24px;
+      padding: 12px 18px;
       z-index: 200;
-      min-width: 160px;
-      font-size: 11px;
+      min-width: 200px;
       color: white;
       display: none;
+      border-right: 4px solid #ff6b6b;
     }
+    .room-code { background: #ff6b6b; padding: 2px 12px; border-radius: 40px; display: inline-block; margin-left: 8px; }
+    .players-list { margin-top: 10px; max-height: 100px; overflow-y: auto; font-size: 12px; }
+    .player-item { background: rgba(255,255,255,0.2); margin: 3px 0; padding: 4px 8px; border-radius: 20px; }
     
-    .game-panel .room-code { background: #ff6b6b; padding: 2px 6px; border-radius: 6px; font-weight: bold; }
-    .players-list { margin-top: 5px; max-height: 80px; overflow-y: auto; font-size: 10px; }
-    .player-item { padding: 2px; margin: 1px; background: rgba(255,255,255,0.1); border-radius: 4px; }
-    
-    /* স্কোরবোর্ড */
     .scoreboard {
       position: fixed;
-      top: 10px;
-      left: 10px;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(10px);
-      border-radius: 12px;
-      padding: 8px 12px;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(16px);
+      border-radius: 24px;
+      padding: 10px 18px;
       z-index: 200;
-      min-width: 140px;
-      font-size: 11px;
+      min-width: 170px;
       color: white;
       display: none;
+      border-left: 4px solid gold;
     }
-    .scoreboard .score { color: #ffaa44; font-weight: bold; font-size: 16px; }
-    .winner-gold { color: #ffd700; font-weight: bold; text-shadow: 0 0 5px #ffd700; }
+    .score { color: #ffcc44; font-size: 24px; margin-left: 8px; }
     
     #status {
       position: fixed;
-      bottom: 90px;
-      left: 10px;
-      right: 10px;
-      background: rgba(0,0,0,0.7);
-      padding: 6px;
-      border-radius: 8px;
+      bottom: 100px;
+      left: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      padding: 8px;
+      border-radius: 60px;
       text-align: center;
-      font-size: 10px;
+      font-family: monospace;
+      font-size: 13px;
       z-index: 100;
+      color: #eee;
+      font-weight: bold;
     }
     
-    /* মোবাইল টাচ কন্ট্রোল */
     .touch-controls {
       position: fixed;
-      bottom: 100px;
+      bottom: 120px;
       left: 20px;
       z-index: 250;
       display: none;
     }
-    
     .joystick {
       width: 120px;
       height: 120px;
       background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(12px);
       border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.3);
+      border: 2px solid rgba(255,255,255,0.5);
       position: relative;
-      touch-action: none;
     }
-    
     .joystick-handle {
       width: 50px;
       height: 50px;
-      background: rgba(255,107,107,0.8);
+      background: rgba(255,107,107,0.95);
       border-radius: 50%;
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      touch-action: none;
       border: 2px solid white;
     }
-    
     .action-buttons {
       position: fixed;
-      bottom: 120px;
+      bottom: 130px;
       right: 20px;
       z-index: 250;
       display: none;
       flex-direction: column;
-      gap: 15px;
+      gap: 18px;
     }
-    
     .action-btn {
-      width: 65px;
-      height: 65px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(12px);
       border: 2px solid #ff6b6b;
       color: white;
-      font-size: 20px;
-      font-weight: bold;
+      font-size: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
-      touch-action: none;
       cursor: pointer;
-      transition: transform 0.1s;
     }
-    .action-btn:active { transform: scale(0.95); background: rgba(255,107,107,0.8); }
+    .action-btn:active { transform: scale(0.94); background: rgba(255,50,50,0.9); }
     
     .pc-controls {
       position: fixed;
       bottom: 100px;
       left: 20px;
-      background: rgba(0,0,0,0.6);
-      padding: 8px 12px;
-      border-radius: 10px;
+      background: rgba(0,0,0,0.7);
+      padding: 6px 16px;
+      border-radius: 40px;
       color: white;
-      font-size: 11px;
+      font-size: 13px;
       z-index: 200;
       display: none;
     }
     
-    .health-bar {
-      position: absolute;
-      top: -15px;
-      left: -25px;
-      width: 50px;
-      height: 6px;
-      background: red;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .health-fill {
-      height: 100%;
-      width: 100%;
-      background: #0f0;
-      transition: width 0.2s;
-    }
-    
-    .hidden { display: none !important; }
-    .connected { color: #0f0; }
-    .connecting { color: #ff0; }
-    .disconnected { color: #f00; }
-    
     @media (max-width: 768px) {
-      .button-bar { padding: 6px 10px; gap: 6px; }
-      .button-bar button { padding: 5px 10px; font-size: 10px; }
+      .button-bar button { padding: 5px 12px; font-size: 11px; }
       .joystick { width: 100px; height: 100px; }
-      .joystick-handle { width: 40px; height: 40px; }
-      .action-btn { width: 55px; height: 55px; font-size: 16px; }
-      .touch-controls { display: block; }
-      .action-buttons { display: flex; }
+      .joystick-handle { width: 42px; height: 42px; }
+      .action-btn { width: 60px; height: 60px; font-size: 24px; }
+      .touch-controls, .action-buttons { display: block; }
       .pc-controls { display: none; }
     }
-    
     @media (min-width: 769px) {
-      .touch-controls { display: none !important; }
-      .action-buttons { display: none !important; }
+      .touch-controls, .action-buttons { display: none !important; }
       .pc-controls { display: block; }
     }
+    .hidden { display: none; }
+    .connected { color: #0f0; }
+    .connecting { color: #ff0; }
+    .disconnected { color: #f66; }
   </style>
 </head>
 <body>
-  <!-- বাটন বার -->
   <div class="button-bar">
-    <button id="quickPlayBtn">🎮 Quick Play</button>
-    <button id="createRoomBtn">🏠 Create Room</button>
-    <button id="joinRoomBtn">👥 Join Room</button>
-    <button id="howToPlayBtn">📖 How to Play</button>
+    <button id="quickPlayBtn">🎮 QUICK WAR</button>
+    <button id="createRoomBtn">🏠 CREATE ROOM</button>
+    <button id="joinRoomBtn">👥 JOIN ROOM</button>
+    <button id="howToPlayBtn">📖 GUIDE</button>
   </div>
   
-  <!-- জয়েন মডাল -->
   <div id="joinModal" class="join-modal">
-    <h3 style="color:#ff6b6b;">🔗 Join Room</h3>
+    <h3 style="color:#ff6b6b;">🔗 JOIN BATTLE</h3>
     <input type="text" id="roomCode" placeholder="Room Code (MJHXXXX)">
     <input type="text" id="playerName" placeholder="Your Name">
-    <button id="confirmJoin">Join</button>
-    <button id="cancelJoin">Cancel</button>
+    <button id="confirmJoin">JOIN</button>
+    <button id="cancelJoin">CANCEL</button>
   </div>
   
-  <!-- গেম প্যানেল -->
   <div id="gamePanel" class="game-panel">
-    <div>🏠 <span id="roomCodeDisplay" class="room-code"></span></div>
-    <div>👥 <span id="playerCount"></span>/10</div>
+    <div>🏠 ROOM: <span id="roomCodeDisplay" class="room-code"></span></div>
+    <div>👥 PLAYERS: <span id="playerCount"></span>/10</div>
     <div class="players-list" id="playersList"></div>
-    <button id="readyBtn" style="background:#4ecdc4; margin-top:5px; padding:3px 8px;">✅ Ready</button>
-    <button id="leaveBtn" style="background:#ff6b6b; margin-top:3px; padding:3px 8px;">🚪 Leave</button>
-    <div id="gameStatus" style="margin-top:4px; font-size:9px;"></div>
+    <button id="readyBtn" style="background:#2e8b57; margin-top:8px;">✅ READY</button>
+    <button id="leaveBtn" style="background:#b22222; margin-top:4px;">🚪 LEAVE</button>
+    <div id="gameStatus" style="font-size:10px; margin-top:5px;"></div>
   </div>
   
-  <!-- স্কোরবোর্ড -->
-  <div id="scoreboard" class="scoreboard">
-    <div>🏆 <span id="playerScore">0</span> pts</div>
-    <div id="winnerDisplay" style="font-size:10px; color:#ffd700;"></div>
+  <div class="scoreboard" id="scoreboard">
+    <div>🏆 SCORE: <span id="playerScore" class="score">0</span></div>
+    <div id="winnerDisplay" style="font-size:12px;"></div>
   </div>
   
-  <div id="status">🔌 Connecting...</div>
+  <div id="status">🔌 CONNECTING...</div>
   
-  <!-- ডেস্কটপ কন্ট্রোল ইন্ডিকেটর -->
-  <div class="pc-controls" id="pcControls">
-    🖥️ <strong>Controls:</strong> W/A/S/D | 🔫 Left Click or Space | 🔄 R to Reload
-  </div>
-  
-  <!-- মোবাইল টাচ কন্ট্রোল -->
+  <div class="pc-controls" id="pcControls">⌨️ WASD / ARROWS | 🔫 SPACE / CLICK | 🔄 R</div>
   <div class="touch-controls" id="touchControls">
-    <div class="joystick" id="joystick">
-      <div class="joystick-handle" id="joystickHandle"></div>
-    </div>
+    <div class="joystick" id="joystick"><div class="joystick-handle" id="joystickHandle"></div></div>
   </div>
-  
   <div class="action-buttons" id="actionButtons">
     <div class="action-btn" id="shootBtn">🔫</div>
     <div class="action-btn" id="reloadBtn">🔄</div>
   </div>
   
-  <!-- How to Play মডাল -->
-  <div id="howToPlayModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:400; justify-content:center; align-items:center;">
-    <div style="background:#1a1a2e; border-radius:20px; padding:20px; max-width:300px; color:white;">
-      <h2 style="color:#ff6b6b;">🎮 How to Play</h2>
-      <p><strong>🎮 Quick Play:</strong> একা খেলা শুরু</p>
-      <p><strong>🏠 Create Room:</strong> রুম তৈরি করুন</p>
-      <p><strong>👥 Join Room:</strong> রুম কোড দিয়ে যোগ দিন</p>
-      <p><strong>🖥️ PC:</strong> W/A/S/D, Left Click/ Space to shoot, R to reload</p>
-      <p><strong>📱 Mobile:</strong> বাম দিকের জয়স্টিক, 🔫 shoot, 🔄 reload</p>
-      <p><strong>🎯 Goal:</strong> শেষ পর্যন্ত বেঁচে থাকুন!</p>
-      <button id="closeModalBtn" style="background:#ff6b6b; padding:10px; border:none; border-radius:25px; margin-top:15px; width:100%; color:white;">Got it 🔥</button>
+  <div id="howToPlayModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.98); z-index:400; align-items:center; justify-content:center;">
+    <div style="background:#1f2a3a; border-radius:40px; padding:28px; max-width:340px; color:white; border:1px solid gold;">
+      <h2 style="color:#ff6b6b;">🔥 FULL GUIDE</h2>
+      <p>✔ QUICK WAR → SOLO vs AI (8 enemies) + destructible world</p>
+      <p>✔ CREATE/JOIN ROOM → REAL MULTIPLAYER (WebSocket)</p>
+      <p>🖥️ WASD, SPACE/LEFT CLICK SHOOT, R RELOAD</p>
+      <p>📱 JOYSTICK + 🔫 SHOOT / 🔄 RELOAD</p>
+      <p>💥 DESTROY HOUSES, KILL ENEMIES, +10 PTS, GOLD CUP</p>
+      <button id="closeModalBtn" style="background:#ff6b6b; padding:12px; border-radius:60px; width:100%;">READY</button>
     </div>
   </div>
 
-  <script type="importmap">
-    { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
-  </script>
-
+  <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }</script>
   <script type="module">
     import * as THREE from 'three';
     
-    // ============= সাউন্ড সিস্টেম =============
-    class SoundManager {
-      constructor() {
-        this.enabled = true;
-        this.audioContext = null;
-      }
-      playSound(name, volume = 0.5) {
+    // ========== SOUND ==========
+    class WarSound {
+      constructor() { this.ctx = null; this.enabled = true; }
+      init() { if (!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } if (this.ctx.state === 'suspended') this.ctx.resume(); }
+      play(type, vol=0.45) {
         if (!this.enabled) return;
+        this.init();
         try {
-          if (!this.audioContext) this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-          if (this.audioContext.state === 'suspended') this.audioContext.resume();
-          const oscillator = this.audioContext.createOscillator();
-          const gainNode = this.audioContext.createGain();
-          oscillator.connect(gainNode);
-          gainNode.connect(this.audioContext.destination);
-          gainNode.gain.value = volume;
-          switch(name) {
-            case 'connect': oscillator.frequency.value = 523.25; oscillator.type = 'sine'; break;
-            case 'click': oscillator.frequency.value = 440; oscillator.type = 'sine'; break;
-            case 'gameStart': oscillator.frequency.value = 659.25; oscillator.type = 'square'; break;
-            case 'move': oscillator.frequency.value = 220; oscillator.type = 'sine'; gainNode.gain.value = 0.05; break;
-            case 'shoot': oscillator.frequency.value = 880; oscillator.type = 'sawtooth'; break;
-            case 'reload': oscillator.frequency.value = 329.63; oscillator.type = 'sine'; break;
-            case 'explosion': oscillator.frequency.value = 220; oscillator.type = 'triangle'; break;
-            default: oscillator.frequency.value = 440;
-          }
-          gainNode.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + 0.3);
-          oscillator.start();
-          oscillator.stop(this.audioContext.currentTime + 0.3);
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          gain.gain.value = vol;
+          if (type === 'shoot') { osc.frequency.value = 880; osc.type = 'sawtooth'; gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.25); }
+          else if (type === 'explode') { osc.frequency.value = 130; osc.type = 'triangle'; gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.45); }
+          else if (type === 'reload') { osc.frequency.value = 520; osc.type = 'sine'; gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.2); }
+          else if (type === 'hit') { osc.frequency.value = 320; osc.type = 'square'; gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.15); }
+          else { osc.frequency.value = 660; }
+          osc.start(); osc.stop(this.ctx.currentTime+0.35);
         } catch(e) {}
       }
     }
-    const sound = new SoundManager();
+    const warSound = new WarSound();
     
-    let ws = null, playerId = null, currentRoom = null, isReady = false, gameStarted = false;
+    // ---------- GLOBALS ----------
+    let ws = null, playerId = null, currentRoom = null, isReady = false, gameActive = false;
     let moveX = 0, moveZ = 0;
-    let ammo = 30, maxAmmo = 30, isReloading = false;
-    let playerHealth = 100;
-    let playerScore = 0;
-    let isDead = false;
+    let ammo = 30, maxAmmo = 30, reloading = false;
+    let health = 100, score = 0, dead = false;
     let buildings = [];
-    let bullets = [];
-    let lastShootTime = 0;
-    const shootCooldown = 500;
+    let enemies = new Map();      // AI enemies (solo)
+    let otherPlayers = new Map(); // multiplayer net
+    let lastShoot = 0;
+    const COOLDOWN = 350;
     
-    // 3D সেটআপ
+    // ---------- THREE.JS WORLD ----------
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87CEEB);
-    scene.fog = new THREE.FogExp2(0x87CEEB, 0.008);
-    
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 5, 10);
-    
+    scene.background = new THREE.Color(0x0a1030);
+    scene.fog = new THREE.FogExp2(0x0a1030, 0.005);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.05, 220);
+    camera.position.set(0, 4.5, 14);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
     
-    // গ্রাউন্ড
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: 0x5c9e3e, roughness: 0.8 }));
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -1;
-    ground.receiveShadow = true;
-    scene.add(ground);
-    
-    const grid = new THREE.GridHelper(100, 30, 0x4ecdc4, 0x2c5f2d);
-    grid.position.y = -0.9;
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x4a724a, roughness: 0.8 });
+    const groundPlane = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), groundMat);
+    groundPlane.rotation.x = -Math.PI/2;
+    groundPlane.position.y = -1.3;
+    groundPlane.receiveShadow = true;
+    scene.add(groundPlane);
+    const grid = new THREE.GridHelper(160, 40, 0x88aaff, 0x557799);
+    grid.position.y = -1.1;
     scene.add(grid);
     
-    // লাইট
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-    scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-    dirLight.position.set(10, 20, 5);
-    dirLight.castShadow = true;
-    scene.add(dirLight);
+    const ambient = new THREE.AmbientLight(0x4a5c6e);
+    scene.add(ambient);
+    const sunLight = new THREE.DirectionalLight(0xffeedd, 1.2);
+    sunLight.position.set(25, 35, 15);
+    sunLight.castShadow = true;
+    scene.add(sunLight);
+    const fillLight = new THREE.PointLight(0x6688aa, 0.6);
+    fillLight.position.set(0, 12, 0);
+    scene.add(fillLight);
     
-    // গাছ
-    for (let i = 0; i < 60; i++) {
-      const tree = new THREE.Group();
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 0.8, 6), new THREE.MeshStandardMaterial({ color: 0x8B5A2B }));
-      trunk.position.y = 0.4;
-      tree.add(trunk);
-      const foliage = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.7, 6), new THREE.MeshStandardMaterial({ color: 0x4caf50 }));
-      foliage.position.y = 0.85;
-      tree.add(foliage);
-      const angle = Math.random() * Math.PI * 2;
-      const radius = 20 + Math.random() * 35;
-      tree.position.x = Math.cos(angle) * radius;
-      tree.position.z = Math.sin(angle) * radius;
-      scene.add(tree);
-    }
-    
-    // ঘরবাড়ি (buildings)
-    function addBuilding(x, z, width, height, depth, color) {
-      const buildingMat = new THREE.MeshStandardMaterial({ color: color || 0xaa8866 });
-      const building = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), buildingMat);
-      building.position.set(x, height/2 - 0.5, z);
-      building.castShadow = true;
-      building.receiveShadow = true;
-      scene.add(building);
-      
-      const roofMat = new THREE.MeshStandardMaterial({ color: 0xcc5533 });
-      const roof = new THREE.Mesh(new THREE.ConeGeometry(width*0.7, height*0.4, 4), roofMat);
-      roof.position.set(x, height - 0.5 + height*0.2, z);
-      roof.castShadow = true;
-      scene.add(roof);
-      
-      buildings.push({ mesh: building, roof, x, z, width, height, depth, health: 50, maxHealth: 50 });
-    }
-    
-    addBuilding(-15, -12, 2.5, 2, 2.5, 0xaa8866);
-    addBuilding(12, -10, 2.5, 2.5, 2.5, 0xaa8866);
-    addBuilding(8, 15, 3, 2.2, 3, 0xaa8866);
-    addBuilding(-10, 14, 2.5, 2, 2.5, 0xaa8866);
-    addBuilding(0, -18, 3, 2.5, 3, 0xaa8866);
-    addBuilding(18, 5, 2.5, 2, 2.5, 0xaa8866);
-    addBuilding(-18, 3, 2.5, 2.2, 2.5, 0xaa8866);
-    addBuilding(5, -5, 2, 1.8, 2, 0xaa8866);
-    addBuilding(-5, 5, 2, 1.8, 2, 0xaa8866);
-    
-    // ফুল
-    for (let i = 0; i < 150; i++) {
-      const flower = new THREE.Group();
-      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.25, 4), new THREE.MeshStandardMaterial({ color: 0x4caf50 }));
-      stem.position.y = 0.12;
-      flower.add(stem);
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshStandardMaterial({ color: [0xff6b6b, 0xffcc5c, 0xff6f69][Math.floor(Math.random() * 3)] }));
-      head.position.y = 0.25;
-      flower.add(head);
-      const x = (Math.random() - 0.5) * 90;
-      const z = (Math.random() - 0.5) * 90;
-      if (Math.abs(x) < 42 && Math.abs(z) < 42 && !buildings.some(b => Math.hypot(b.x - x, b.z - z) < 3)) {
-        flower.position.set(x, -0.85, z);
-        scene.add(flower);
-      }
-    }
-    
-    // কার্টুন প্লেয়ার (পিস্তল হাতে)
-    function createPlayer(color = 0xff6b6b, isLocal = false) {
+    // ========== REALISTIC SOLDIER (fully armed, human proportion) ==========
+    function createRealSoldier(color = 0xbc7a4a, isLocal = false) {
       const group = new THREE.Group();
-      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.4, 1.0, 8), new THREE.MeshStandardMaterial({ color, roughness: 0.3 }));
-      body.position.y = 0.5;
-      body.castShadow = true;
-      group.add(body);
-      
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.45, 32, 32), new THREE.MeshStandardMaterial({ color: 0xffdd99 }));
-      head.position.y = 1.05;
-      head.castShadow = true;
+      // torso
+      const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.48, 0.95, 12), new THREE.MeshStandardMaterial({ color: color, roughness: 0.4 }));
+      torso.position.y = 0.65; torso.castShadow = true;
+      group.add(torso);
+      // legs
+      const legMat = new THREE.MeshStandardMaterial({ color: 0x4d3e2c });
+      const leftLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.75, 8), legMat);
+      leftLeg.position.set(-0.28, 0.25, 0); leftLeg.castShadow = true;
+      const rightLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.75, 8), legMat);
+      rightLeg.position.set(0.28, 0.25, 0); rightLeg.castShadow = true;
+      group.add(leftLeg, rightLeg);
+      // head
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.45, 32, 32), new THREE.MeshStandardMaterial({ color: 0xe0ac69 }));
+      head.position.y = 1.12; head.castShadow = true;
       group.add(head);
-      
-      const eyeWhite = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffffff }));
-      const leftEye = eyeWhite.clone(); leftEye.position.set(-0.18, 1.18, 0.45); group.add(leftEye);
-      const rightEye = eyeWhite.clone(); rightEye.position.set(0.18, 1.18, 0.45); group.add(rightEye);
-      
-      const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), new THREE.MeshStandardMaterial({ color: 0x000000 }));
-      const leftPupil = pupil.clone(); leftPupil.position.set(-0.18, 1.17, 0.55); group.add(leftPupil);
-      const rightPupil = pupil.clone(); rightPupil.position.set(0.18, 1.17, 0.55); group.add(rightPupil);
-      
-      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.55, 0.15, 8), new THREE.MeshStandardMaterial({ color }));
-      cap.position.y = 1.38;
-      group.add(cap);
-      
-      // পিস্তল
-      const gun = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.15, 0.5), new THREE.MeshStandardMaterial({ color: 0x333333 }));
-      gun.position.set(0.4, 0.8, 0.3);
-      group.add(gun);
-      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.4, 6), new THREE.MeshStandardMaterial({ color: 0x555555 }));
+      // eyes
+      const eyeMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+      const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 24, 24), eyeMat);
+      leftEye.position.set(-0.18, 1.24, 0.48);
+      const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 24, 24), eyeMat);
+      rightEye.position.set(0.18, 1.24, 0.48);
+      group.add(leftEye, rightEye);
+      const pupilMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+      const leftPupil = new THREE.Mesh(new THREE.SphereGeometry(0.055, 24, 24), pupilMat);
+      leftPupil.position.set(-0.18, 1.235, 0.58);
+      const rightPupil = new THREE.Mesh(new THREE.SphereGeometry(0.055, 24, 24), pupilMat);
+      rightPupil.position.set(0.18, 1.235, 0.58);
+      group.add(leftPupil, rightPupil);
+      // helmet
+      const helm = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.56, 0.26, 8), new THREE.MeshStandardMaterial({ color: 0x8b6946, metalness: 0.7 }));
+      helm.position.y = 1.38; helm.castShadow = true;
+      group.add(helm);
+      // rifle
+      const rifleBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.18, 0.9), new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.85 }));
+      rifleBase.position.set(0.52, 0.88, 0.4);
+      group.add(rifleBase);
+      const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.55, 8), new THREE.MeshStandardMaterial({ color: 0x666666 }));
       barrel.rotation.x = Math.PI/2;
-      barrel.position.set(0.55, 0.8, 0.55);
+      barrel.position.set(0.65, 0.88, 0.75);
       group.add(barrel);
-      
-      // হেলথ বার
-      const healthBar = new THREE.Group();
-      const bgBar = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.15), new THREE.MeshStandardMaterial({ color: 0xff0000 }));
-      bgBar.position.y = 1.7;
-      healthBar.add(bgBar);
-      const fillBar = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.15), new THREE.MeshStandardMaterial({ color: 0x00ff00 }));
-      fillBar.position.y = 1.7;
+      const mag = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.28, 0.15), new THREE.MeshStandardMaterial({ color: 0x222222 }));
+      mag.position.set(0.58, 0.7, 0.5);
+      group.add(mag);
+      // health bar
+      const hBarGroup = new THREE.Group();
+      const bgBar = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.13), new THREE.MeshStandardMaterial({ color: 0xcc3333 }));
+      bgBar.position.y = 1.75;
+      const fillBar = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.13), new THREE.MeshStandardMaterial({ color: 0x44ff44 }));
+      fillBar.position.y = 1.75;
       fillBar.scale.x = 1;
-      healthBar.add(fillBar);
-      group.add(healthBar);
+      hBarGroup.add(bgBar, fillBar);
+      group.add(hBarGroup);
       group.userData = { healthBar: fillBar, health: 100 };
-      
       return group;
     }
     
-    let localPlayer = createPlayer(0xff6b6b, true);
+    let localPlayer = createRealSoldier(0xbc7a4a, true);
     scene.add(localPlayer);
-    localPlayer.position.set(0, -0.8, 0);
+    localPlayer.position.set(0, -1.0, 0);
     
-    const otherPlayers = new Map();
+    // ========== DESTRUCTIBLE BUILDINGS (45+ structures) ==========
+    function addBuilding(x, z, w = 2.6, h = 2.3, d = 2.6, color = 0xaa8866) {
+      const box = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: color, roughness: 0.5 }));
+      box.position.set(x, h/2 - 0.9, z);
+      box.castShadow = true; box.receiveShadow = true;
+      scene.add(box);
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(w*0.75, h*0.45, 4), new THREE.MeshStandardMaterial({ color: 0xcc6644 }));
+      roof.position.set(x, h - 0.65 + h*0.2, z);
+      scene.add(roof);
+      buildings.push({ mesh: box, roof: roof, x, z, w, h, d, health: 70 });
+    }
+    const buildingPositions = [
+      [-28,-22],[24,-28],[-15,28],[28,18],[-30,10],[30,-8],[8,-30],[-8,30],
+      [18,18],[-18,-18],[12,-12],[-12,12],[0,26],[0,-26],[26,0],[-26,0],
+      [22,22],[-22,22],[22,-22],[-22,-22],[15,-20],[-20,15],[20,-15],[-15,-20],
+      [5,-35],[-5,35],[35,5],[-35,-5],[32,14],[-32,-14],[-10,-10],[10,10],
+      [-40,5],[40,-5],[0,40],[0,-40],[-25,25],[25,-25]
+    ];
+    buildingPositions.forEach(pos => addBuilding(pos[0], pos[1], 2.6, 2.3, 2.6, 0xaa8866));
+    for(let i=0;i<28;i++) addBuilding((Math.random()-0.5)*80, (Math.random()-0.5)*80, 2.2, 2.0, 2.2, 0xbb9966);
     
-    // জয়স্টিক
-    const joystick = document.getElementById('joystick');
-    const handle = document.getElementById('joystickHandle');
-    let active = false;
+    // trees & bushes
+    for(let i=0;i<160;i++) {
+      const tree = new THREE.Group();
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.45,0.95,5), new THREE.MeshStandardMaterial({ color: 0x8B5A2B }));
+      trunk.position.y = 0.5;
+      const foliage = new THREE.Mesh(new THREE.ConeGeometry(0.7,0.9,6), new THREE.MeshStandardMaterial({ color: 0x5c9e3e }));
+      foliage.position.y = 1.0;
+      tree.add(trunk, foliage);
+      let ang = Math.random()*Math.PI*2, rad = 28 + Math.random()*52;
+      tree.position.x = Math.cos(ang)*rad; tree.position.z = Math.sin(ang)*rad;
+      scene.add(tree);
+    }
+    // flowers / grass patches
+    for(let i=0;i<500;i++) {
+      let grass = new THREE.Mesh(new THREE.ConeGeometry(0.12,0.2,3), new THREE.MeshStandardMaterial({ color: 0x5a8f4c }));
+      grass.position.x = (Math.random()-0.5)*140;
+      grass.position.z = (Math.random()-0.5)*140;
+      grass.position.y = -1.15;
+      scene.add(grass);
+    }
     
-    function updateJoystick(e) {
-      if (!active) return;
-      const rect = joystick.getBoundingClientRect();
-      let clientX, clientY;
-      if (e.touches) {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
+    // ========== AI ENEMIES (8 soldiers for solo mode) ==========
+    function spawnAIEnemy(x, z, id) {
+      const enemy = createRealSoldier(0xaa6644, false);
+      scene.add(enemy);
+      enemy.position.set(x, -1.0, z);
+      enemy.userData = { id: id, health: 100, lastAttack: 0, type: 'ai' };
+      return enemy;
+    }
+    
+    function startSinglePlayer() {
+      gameActive = true; dead = false; health = 100; ammo = maxAmmo; reloading = false; score = 0;
+      document.getElementById('playerScore').innerText = "0";
+      document.getElementById('winnerDisplay').innerHTML = "";
+      document.getElementById('gameStatus').innerText = "⚔️ ELIMINATE ALL ENEMIES! ⚔️";
+      enemies.forEach(e => scene.remove(e));
+      enemies.clear();
+      for(let i=0;i<8;i++) {
+        let angle = Math.random()*Math.PI*2, dist = 12 + Math.random()*35;
+        let ex = Math.cos(angle)*dist, ez = Math.sin(angle)*dist;
+        enemies.set(i, spawnAIEnemy(ex, ez, i));
       }
-      let dx = clientX - rect.left - rect.width/2;
-      let dy = clientY - rect.top - rect.height/2;
-      const distance = Math.hypot(dx, dy);
-      const maxDist = rect.width/2 - 25;
-      if (distance > maxDist) { dx = dx / distance * maxDist; dy = dy / distance * maxDist; }
-      handle.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-      moveX = dx / maxDist;
-      moveZ = dy / maxDist;
-      if ((moveX !== 0 || moveZ !== 0) && gameStarted) sound.playSound('move', 0.05);
+      localPlayer.position.set(0, -1.0, 0);
+      warSound.play('explode',0.3);
+      updateStatusUI();
     }
     
-    function startDrag(e) { active = true; moveX = moveZ = 0; handle.style.transform = 'translate(-50%, -50%)'; updateJoystick(e); e.preventDefault(); }
-    function endDrag() { active = false; moveX = moveZ = 0; handle.style.transform = 'translate(-50%, -50%)'; }
-    
-    if (joystick) {
-      joystick.addEventListener('touchstart', startDrag);
-      joystick.addEventListener('touchmove', updateJoystick);
-      joystick.addEventListener('touchend', endDrag);
+    function updateStatusUI() {
+      const statDiv = document.getElementById('status');
+      statDiv.innerHTML = `🔫 ${ammo}/${maxAmmo} ${reloading ? '(RELOAD)' : ''} | ❤️ ${health} | 🏆 ${score} PTS`;
+      if(localPlayer.userData?.healthBar) localPlayer.userData.healthBar.scale.x = health/100;
     }
     
-    // ডেস্কটপ কীবোর্ড
-    const keys = { w: false, s: false, a: false, d: false, up: false, down: false, left: false, right: false, space: false, r: false };
-    window.addEventListener('keydown', (e) => {
-      const key = e.key.toLowerCase();
-      if (keys.hasOwnProperty(key)) keys[key] = true;
-      if (key === ' ') keys.space = true;
-      if (key === 'r') keys.r = true;
-      if (key === 'arrowup') keys.up = true;
-      if (key === 'arrowdown') keys.down = true;
-      if (key === 'arrowleft') keys.left = true;
-      if (key === 'arrowright') keys.right = true;
-      if (keys.w || keys.up || keys.s || keys.down || keys.a || keys.left || keys.d || keys.right) e.preventDefault();
-    });
-    window.addEventListener('keyup', (e) => {
-      const key = e.key.toLowerCase();
-      if (keys.hasOwnProperty(key)) keys[key] = false;
-      if (key === ' ') keys.space = false;
-      if (key === 'r') keys.r = false;
-      if (key === 'arrowup') keys.up = false;
-      if (key === 'arrowdown') keys.down = false;
-      if (key === 'arrowleft') keys.left = false;
-      if (key === 'arrowright') keys.right = false;
-    });
-    
-    // শুট ফাংশন
-    function shoot() {
-      if (!gameStarted || isDead || isReloading || ammo <= 0) return;
+    // shooting & destruction
+    function shootWeapon() {
+      if(!gameActive || dead || reloading || ammo <=0) return;
       const now = Date.now();
-      if (now - lastShootTime < shootCooldown) return;
-      lastShootTime = now;
+      if(now - lastShoot < COOLDOWN) return;
+      lastShoot = now;
       ammo--;
-      sound.playSound('shoot', 0.3);
-      updateAmmoDisplay();
+      warSound.play('shoot',0.55);
+      updateStatusUI();
+      const origin = localPlayer.position.clone(); origin.y += 0.9;
+      const direction = new THREE.Vector3(0,0,-1).applyQuaternion(localPlayer.quaternion);
       
-      // রশ্মি
-      const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(localPlayer.quaternion);
-      const origin = localPlayer.position.clone();
-      origin.y += 0.8;
-      
-      // raycast অন্যদের
-      otherPlayers.forEach((player, id) => {
-        const distance = origin.distanceTo(player.position);
-        if (distance < 5) {
-          const toTarget = player.position.clone().sub(origin).normalize();
-          if (toTarget.dot(direction) > 0.7) {
-            // Damage other player
-            ws.send(JSON.stringify({ type: 'damage_player', targetId: id, damage: 34 }));
+      // hit AI enemies
+      enemies.forEach((enemy, idx) => {
+        const dist = origin.distanceTo(enemy.position);
+        if(dist < 15) {
+          const toEnemy = enemy.position.clone().sub(origin).normalize();
+          if(toEnemy.dot(direction) > 0.7) {
+            enemy.userData.health -= 34;
+            if(enemy.userData.health <= 0) {
+              scene.remove(enemy); enemies.delete(idx);
+              score += 10;
+              document.getElementById('playerScore').innerText = score;
+              warSound.play('explode',0.5);
+              updateStatusUI();
+            } else if(enemy.userData.healthBar) enemy.userData.healthBar.scale.x = enemy.userData.health/100;
           }
         }
       });
-      
-      // buildings damage
+      // destroy buildings
       buildings.forEach(b => {
-        const toBuilding = new THREE.Vector3(b.x, 0, b.z).sub(origin);
-        const distance = toBuilding.length();
-        if (distance < 8 && Math.abs(toBuilding.normalize().dot(direction)) > 0.7) {
-          b.health -= 20;
-          if (b.health <= 0) {
-            scene.remove(b.mesh);
-            scene.remove(b.roof);
+        const toB = new THREE.Vector3(b.x, 0, b.z).sub(origin);
+        const distB = toB.length();
+        if(distB < 18 && Math.abs(toB.clone().normalize().dot(direction)) > 0.6) {
+          b.health -= 28;
+          if(b.health <= 0) {
+            scene.remove(b.mesh); scene.remove(b.roof);
             buildings = buildings.filter(bb => bb !== b);
+            warSound.play('explode',0.6);
           }
+        }
+      });
+      // multiplayer damage send
+      if(ws && ws.readyState===WebSocket.OPEN && currentRoom) {
+        ws.send(JSON.stringify({ type: 'shoot', origin, direction }));
+      }
+      if(enemies.size === 0 && gameActive && !currentRoom) {
+        gameActive = false;
+        document.getElementById('winnerDisplay').innerHTML = "🏆 YOU WON! GOLD CUP! 🏆";
+        warSound.play('explode',0.8);
+      }
+    }
+    
+    function reloadGun() {
+      if(reloading || ammo === maxAmmo) return;
+      reloading = true;
+      warSound.play('reload',0.4);
+      setTimeout(()=>{ ammo = maxAmmo; reloading = false; updateStatusUI(); }, 1300);
+      updateStatusUI();
+    }
+    
+    // AI movement & attack
+    function updateAI() {
+      if(!gameActive || dead) return;
+      enemies.forEach((enemy, id) => {
+        const toPlayer = localPlayer.position.clone().sub(enemy.position);
+        const dist = toPlayer.length();
+        if(dist < 22 && dist > 2.5) {
+          const dir = toPlayer.normalize();
+          enemy.position.x += dir.x * 0.09;
+          enemy.position.z += dir.z * 0.09;
+          enemy.rotation.y = Math.atan2(toPlayer.x, toPlayer.z);
+        }
+        if(dist < 16 && (Date.now() - (enemy.userData.lastAttack||0) > 1600)) {
+          enemy.userData.lastAttack = Date.now();
+          health -= 13;
+          warSound.play('hit',0.3);
+          updateStatusUI();
+          if(health <= 0 && !dead) { dead = true; gameActive = false; document.getElementById('status').innerHTML = "💀 YOU DIED... GAME OVER"; warSound.play('explode',0.6); }
         }
       });
     }
     
-    function reload() {
-      if (isReloading || ammo === maxAmmo) return;
-      isReloading = true;
-      sound.playSound('reload', 0.3);
-      setTimeout(() => { ammo = maxAmmo; isReloading = false; updateAmmoDisplay(); }, 1500);
+    // ========== JOYSTICK & MOVEMENT ==========
+    const joyDiv = document.getElementById('joystick'), stickHandle = document.getElementById('joystickHandle');
+    let stickActive = false;
+    function moveJoy(e) {
+      if(!stickActive) return;
+      const rect = joyDiv.getBoundingClientRect();
+      let cx, cy; if(e.touches){ cx=e.touches[0].clientX; cy=e.touches[0].clientY; } else { cx=e.clientX; cy=e.clientY; }
+      let dx = cx - rect.left - rect.width/2, dy = cy - rect.top - rect.height/2;
+      const maxD = rect.width/2 - 25;
+      let dist = Math.hypot(dx,dy);
+      if(dist>maxD){ dx=dx/dist*maxD; dy=dy/dist*maxD; }
+      stickHandle.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      moveX = dx/maxD; moveZ = dy/maxD;
     }
+    joyDiv.addEventListener('touchstart', (e)=>{ stickActive=true; moveX=moveZ=0; stickHandle.style.transform='translate(-50%,-50%)'; moveJoy(e); e.preventDefault(); });
+    joyDiv.addEventListener('touchmove', moveJoy);
+    joyDiv.addEventListener('touchend', ()=>{ stickActive=false; moveX=moveZ=0; stickHandle.style.transform='translate(-50%,-50%)'; });
     
-    function updateAmmoDisplay() {
-      const statusDiv = document.getElementById('status');
-      if (gameStarted) statusDiv.innerHTML = `🔫 ${ammo}/${maxAmmo} ${isReloading ? '(Reloading...)' : ''} | ❤️ ${playerHealth} | 🏆 ${playerScore} pts`;
-    }
+    const keys = { w:0, s:0, a:0, d:0, up:0, down:0, left:0, right:0, space:0, r:0 };
+    window.addEventListener('keydown', (e)=>{
+      let k=e.key.toLowerCase();
+      if(k==='w') keys.w=1; if(k==='s') keys.s=1; if(k==='a') keys.a=1; if(k==='d') keys.d=1;
+      if(k==='arrowup') keys.up=1; if(k==='arrowdown') keys.down=1; if(k==='arrowleft') keys.left=1; if(k==='arrowright') keys.right=1;
+      if(k===' '){ keys.space=1; e.preventDefault(); shootWeapon(); }
+      if(k==='r'){ reloadGun(); }
+    });
+    window.addEventListener('keyup', (e)=>{
+      let k=e.key.toLowerCase();
+      if(k==='w') keys.w=0; if(k==='s') keys.s=0; if(k==='a') keys.a=0; if(k==='d') keys.d=0;
+      if(k==='arrowup') keys.up=0; if(k==='arrowdown') keys.down=0; if(k==='arrowleft') keys.left=0; if(k==='arrowright') keys.right=0;
+      if(k===' ') keys.space=0;
+    });
     
-    function updateCamera() {
-      if (gameStarted && localPlayer && !isDead) {
-        const targetPos = localPlayer.position.clone();
-        camera.position.lerp(targetPos.clone().add(new THREE.Vector3(0, 3, 8)), 0.1);
-        camera.lookAt(targetPos);
-      }
-    }
-    
-    let lastPos = { x: 0, z: 0 };
     function handleMovement() {
-      if (!gameStarted || !localPlayer || isDead) return;
-      let dx = 0, dz = 0;
-      if (keys.w || keys.up) dz -= 1;
-      if (keys.s || keys.down) dz += 1;
-      if (keys.a || keys.left) dx -= 1;
-      if (keys.d || keys.right) dx += 1;
-      let finalX = moveX !== 0 ? moveX : dx;
-      let finalZ = moveZ !== 0 ? moveZ : dz;
-      if (finalX !== 0 || finalZ !== 0) {
-        localPlayer.position.x += finalX * 0.25;
-        localPlayer.position.z += finalZ * 0.25;
-        localPlayer.position.x = Math.max(-45, Math.min(45, localPlayer.position.x));
-        localPlayer.position.z = Math.max(-45, Math.min(45, localPlayer.position.z));
-        const angle = Math.atan2(finalX, finalZ);
-        localPlayer.rotation.y = angle;
-        if (ws && ws.readyState === WebSocket.OPEN && !isDead) {
-          const pos = { x: localPlayer.position.x, y: 0, z: localPlayer.position.z };
-          if (Math.hypot(pos.x - lastPos.x, pos.z - lastPos.z) > 0.3) {
-            ws.send(JSON.stringify({ type: 'update_position', position: pos }));
-            lastPos = { x: pos.x, z: pos.z };
-          }
+      if(!gameActive || dead) return;
+      let dx=0, dz=0;
+      dx += (keys.a || keys.left) ? -1 : (keys.d || keys.right) ? 1 : 0;
+      dz += (keys.w || keys.up) ? -1 : (keys.s || keys.down) ? 1 : 0;
+      let finalX = moveX !==0 ? moveX : dx;
+      let finalZ = moveZ !==0 ? moveZ : dz;
+      if(finalX!==0 || finalZ!==0){
+        localPlayer.position.x += finalX*0.27;
+        localPlayer.position.z += finalZ*0.27;
+        localPlayer.position.x = Math.max(-72, Math.min(72, localPlayer.position.x));
+        localPlayer.position.z = Math.max(-72, Math.min(72, localPlayer.position.z));
+        localPlayer.rotation.y = Math.atan2(finalX, finalZ);
+        if(ws && ws.readyState===WebSocket.OPEN && currentRoom && gameActive){
+          ws.send(JSON.stringify({ type: 'move', pos: { x: localPlayer.position.x, z: localPlayer.position.z } }));
         }
       }
-      if (keys.space) shoot();
-      if (keys.r) reload();
     }
     
-    // UI এলিমেন্ট
-    const statusDiv = document.getElementById('status');
-    const gamePanel = document.getElementById('gamePanel');
-    const roomCodeDisplay = document.getElementById('roomCodeDisplay');
-    const playersListDiv = document.getElementById('playersList');
-    const playerCountSpan = document.getElementById('playerCount');
-    const readyBtn = document.getElementById('readyBtn');
-    const leaveBtn = document.getElementById('leaveBtn');
-    const gameStatusDiv = document.getElementById('gameStatus');
-    const joinModal = document.getElementById('joinModal');
-    const scoreboard = document.getElementById('scoreboard');
-    const playerScoreSpan = document.getElementById('playerScore');
-    const winnerDisplay = document.getElementById('winnerDisplay');
+    function updateCameraFollow() {
+      if(gameActive && localPlayer && !dead){
+        let target = localPlayer.position.clone().add(new THREE.Vector3(0, 2.5, 9));
+        camera.position.lerp(target, 0.09);
+        camera.lookAt(localPlayer.position);
+      }
+    }
     
-    // WebSocket
+    // ========== WEBSOCKET MULTIPLAYER ==========
     function connectWebSocket() {
-      statusDiv.textContent = '🔌 Connecting...';
-      statusDiv.className = 'connecting';
-      ws = new WebSocket('wss://mjh-pubg-server.onrender.com');
-      ws.onopen = () => { 
-        statusDiv.textContent = '✅ Connected!'; 
-        statusDiv.className = 'connected';
-        sound.playSound('connect', 0.3);
-      };
-      ws.onmessage = (e) => { try { handleMessage(JSON.parse(e.data)); } catch(e) {} };
-      ws.onerror = () => { statusDiv.textContent = '❌ Error!'; statusDiv.className = 'disconnected'; };
-      ws.onclose = () => { statusDiv.textContent = '🔌 Disconnected'; statusDiv.className = 'disconnected'; };
-    }
-    
-    function handleMessage(data) {
-      switch(data.type) {
-        case 'connected': playerId = data.playerId; break;
-        case 'room_created': case 'room_joined':
-          currentRoom = data.roomCode;
-          roomCodeDisplay.textContent = data.roomCode;
-          updatePlayers(data.players);
-          gamePanel.style.display = 'block';
-          scoreboard.style.display = 'block';
-          statusDiv.textContent = `🎯 Room: ${data.roomCode}`;
-          sound.playSound('click', 0.2);
-          break;
-        case 'player_joined': case 'player_left': case 'player_ready_update':
-          if (data.players) updatePlayers(data.players);
-          break;
-        case 'game_start':
-          gameStarted = true;
-          isDead = false;
-          playerHealth = 100;
-          playerScore = 0;
-          ammo = maxAmmo;
-          gameStatusDiv.textContent = '🎮 GAME STARTED! Fight!';
-          statusDiv.textContent = '🔫 Battle Royale Mode Active!';
-          localPlayer.position.set((Math.random()-0.5)*50, -0.8, (Math.random()-0.5)*50);
-          playerScoreSpan.textContent = playerScore;
-          winnerDisplay.textContent = '';
-          sound.playSound('gameStart', 0.5);
-          updateAmmoDisplay();
-          break;
-        case 'player_damage':
-          if (data.targetId === playerId) {
-            playerHealth -= data.damage;
-            if (localPlayer.userData?.healthBar) localPlayer.userData.healthBar.scale.x = playerHealth/100;
-            updateAmmoDisplay();
-            if (playerHealth <= 0 && !isDead) {
-              isDead = true;
-              gameStarted = false;
-              statusDiv.textContent = '💀 YOU DIED! Game Over!';
-              gameStatusDiv.textContent = '💀 You were eliminated!';
-              sound.playSound('explosion', 0.5);
+      const wsUrl = 'wss://mjh-pubg-server.onrender.com';
+      ws = new WebSocket(wsUrl);
+      ws.onopen = () => { document.getElementById('status').innerHTML = '✅ Connected to server'; warSound.play('connect',0.3); };
+      ws.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if(data.type === 'connected') playerId = data.playerId;
+          else if(data.type === 'room_created' || data.type === 'room_joined'){
+            currentRoom = data.roomCode;
+            document.getElementById('roomCodeDisplay').innerText = data.roomCode;
+            updatePlayersList(data.players);
+            document.getElementById('gamePanel').style.display = 'block';
+            document.getElementById('scoreboard').style.display = 'block';
+            gameActive = true;
+            enemies.clear();
+          }
+          else if(data.type === 'player_joined' || data.type === 'player_left' || data.type === 'player_ready_update'){
+            if(data.players) updatePlayersList(data.players);
+          }
+          else if(data.type === 'game_start'){
+            gameActive = true; dead = false; health = 100; ammo = maxAmmo;
+            document.getElementById('gameStatus').innerHTML = "🎮 MULTIPLAYER STARTED!";
+          }
+          else if(data.type === 'player_moved'){
+            if(data.playerId !== playerId){
+              let p = otherPlayers.get(data.playerId);
+              if(!p){ p = createRealSoldier(0x4ecdc4); scene.add(p); otherPlayers.set(data.playerId, p); }
+              p.position.set(data.pos.x, -1.0, data.pos.z);
             }
           }
-          break;
-        case 'player_kill':
-          if (data.killerId === playerId) {
-            playerScore += 10;
-            playerScoreSpan.textContent = playerScore;
-            statusDiv.textContent = `🔫 You killed ${data.victimName}! +10 pts`;
-            sound.playSound('explosion', 0.4);
+          else if(data.type === 'player_damage' && data.targetId === playerId){
+            health -= data.damage; updateStatusUI();
+            if(health <= 0) { dead=true; gameActive=false; document.getElementById('status').innerHTML = "💀 YOU DIED"; }
           }
-          break;
-        case 'game_winner':
-          if (data.winnerId === playerId) {
-            winnerDisplay.textContent = '👑 YOU WIN! GOLD CUP! 👑';
-            playerScore += 50;
-            playerScoreSpan.textContent = playerScore;
-            statusDiv.textContent = '🏆 VICTORY! You are the Champion! 🏆';
-            sound.playSound('gameStart', 0.6);
-          } else {
-            winnerDisplay.textContent = `🏆 Winner: ${data.winnerName}`;
+          else if(data.type === 'player_kill' && data.killerId === playerId){
+            score += 10; document.getElementById('playerScore').innerText = score;
           }
-          gameStarted = false;
-          break;
-        case 'player_moved':
-          if (data.playerId !== playerId && data.position) {
-            let p = otherPlayers.get(data.playerId);
-            if (!p) { p = createPlayer(0x4ecdc4); scene.add(p); otherPlayers.set(data.playerId, p); }
-            p.position.set(data.position.x, -0.8, data.position.z);
+          else if(data.type === 'game_winner'){
+            if(data.winnerId === playerId) document.getElementById('winnerDisplay').innerHTML = "👑 YOU WIN! GOLD CUP! 👑";
+            else document.getElementById('winnerDisplay').innerHTML = `🏆 WINNER: ${data.winnerName}`;
+            gameActive = false;
           }
-          break;
-        case 'error': statusDiv.textContent = `⚠️ ${data.message}`; break;
-      }
+        } catch(err) {}
+      };
+      ws.onerror = () => { document.getElementById('status').innerHTML = '❌ Connection error'; };
+      ws.onclose = () => { document.getElementById('status').innerHTML = '🔌 Disconnected'; };
     }
     
-    function updatePlayers(players) {
-      playerCountSpan.textContent = players.length;
-      playersListDiv.innerHTML = players.map(p => `<div class="player-item">${p.name} ${p.isHost ? '👑' : ''} ${p.ready ? '✅' : '⏳'}</div>`).join('');
+    function updatePlayersList(players) {
+      document.getElementById('playerCount').innerHTML = players.length;
+      const listDiv = document.getElementById('playersList');
+      listDiv.innerHTML = players.map(p => `<div class="player-item">${p.name} ${p.isHost ? '👑' : ''} ${p.ready ? '✅' : '⏳'}</div>`).join('');
     }
     
-    // বাটন ইভেন্ট
-    document.getElementById('quickPlayBtn').onclick = () => { 
-      if (ws?.readyState === WebSocket.OPEN) { ws.send(JSON.stringify({ type: 'quick_play' })); sound.playSound('click', 0.2); }
-    };
-    document.getElementById('createRoomBtn').onclick = () => { 
-      if (ws?.readyState === WebSocket.OPEN) { ws.send(JSON.stringify({ type: 'create_room', roomName: 'MJH Battle' })); sound.playSound('click', 0.2); }
-    };
-    document.getElementById('joinRoomBtn').onclick = () => { joinModal.style.display = 'block'; sound.playSound('click', 0.2); };
+    // UI buttons
+    document.getElementById('quickPlayBtn').onclick = () => { startSinglePlayer(); document.getElementById('gamePanel').style.display = 'block'; document.getElementById('scoreboard').style.display = 'block'; };
+    document.getElementById('createRoomBtn').onclick = () => { if(ws && ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify({ type: 'create_room', roomName: 'WarZone' })); else alert('WebSocket not connected'); };
+    document.getElementById('joinRoomBtn').onclick = () => document.getElementById('joinModal').style.display = 'flex';
     document.getElementById('confirmJoin').onclick = () => {
       const code = document.getElementById('roomCode').value.trim().toUpperCase();
-      const name = document.getElementById('playerName').value.trim() || `Player_${Math.floor(Math.random()*1000)}`;
-      if (code && ws?.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'join_room', roomCode: code, playerName: name }));
-        joinModal.style.display = 'none';
-        sound.playSound('click', 0.2);
-      }
+      const name = document.getElementById('playerName').value.trim() || `Soldier_${Math.floor(Math.random()*1000)}`;
+      if(ws && ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify({ type: 'join_room', roomCode: code, playerName: name }));
+      document.getElementById('joinModal').style.display = 'none';
     };
-    document.getElementById('cancelJoin').onclick = () => { joinModal.style.display = 'none'; };
-    readyBtn.onclick = () => { 
-      if (ws && currentRoom && !isReady) { 
-        isReady = true; 
-        ws.send(JSON.stringify({ type: 'player_ready' })); 
-        readyBtn.disabled = true; 
-        readyBtn.textContent = '✅ Ready!';
-        sound.playSound('click', 0.2);
-      } 
-    };
-    leaveBtn.onclick = () => { 
-      if (ws && currentRoom) { 
-        ws.send(JSON.stringify({ type: 'leave_room' })); 
-        gamePanel.style.display = 'none'; 
-        scoreboard.style.display = 'none';
-        currentRoom = null; 
-        gameStarted = false; 
-        isReady = false; 
-        isDead = false;
-        readyBtn.disabled = false; 
-        readyBtn.textContent = '✅ Ready'; 
-        localPlayer.position.set(0, -0.8, 0); 
-        otherPlayers.forEach(p => scene.remove(p)); 
-        otherPlayers.clear();
-        sound.playSound('click', 0.2);
-      } 
-    };
+    document.getElementById('cancelJoin').onclick = () => document.getElementById('joinModal').style.display = 'none';
+    document.getElementById('readyBtn').onclick = () => { if(ws && currentRoom && !isReady){ isReady=true; ws.send(JSON.stringify({ type: 'player_ready' })); document.getElementById('readyBtn').disabled=true; } };
+    document.getElementById('leaveBtn').onclick = () => { if(ws && currentRoom) ws.send(JSON.stringify({ type: 'leave_room' })); gameActive=false; document.getElementById('gamePanel').style.display='none'; document.getElementById('scoreboard').style.display='none'; };
+    document.getElementById('shootBtn').addEventListener('click', () => shootWeapon());
+    document.getElementById('reloadBtn').addEventListener('click', () => reloadGun());
     
-    const shootBtn = document.getElementById('shootBtn');
-    const reloadBtn = document.getElementById('reloadBtn');
-    if (shootBtn) shootBtn.addEventListener('click', () => shoot());
-    if (reloadBtn) reloadBtn.addEventListener('click', () => reload());
-    
-    const modal = document.getElementById('howToPlayModal');
-    document.getElementById('howToPlayBtn').onclick = () => modal.style.display = 'flex';
-    document.getElementById('closeModalBtn').onclick = () => modal.style.display = 'none';
-    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    const guideModal = document.getElementById('howToPlayModal');
+    document.getElementById('howToPlayBtn').onclick = () => guideModal.style.display = 'flex';
+    document.getElementById('closeModalBtn').onclick = () => guideModal.style.display = 'none';
     
     function animate() {
       requestAnimationFrame(animate);
       handleMovement();
-      updateCamera();
+      updateAI();
+      updateCameraFollow();
       renderer.render(scene, camera);
     }
     animate();
-    
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-    
+    window.addEventListener('resize', () => { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+    warSound.init();
     connectWebSocket();
+    console.log("🚀 FULL ULTIMATE WARZONE LOADED");
   </script>
 </body>
 </html>
